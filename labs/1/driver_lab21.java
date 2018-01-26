@@ -21,6 +21,6 @@ public class driver_lab21 {
         // Convert
         double fahrenheit = (9.0 / 5) * celsius + 32;
         // Print output to user
-        System.out.printf("%.1f Celsius is %.1f Fahrenheit", celsius, fahrenheit);
+        System.out.format("%.1f Celsius is %.1f Fahrenheit", celsius, fahrenheit);
     }
 }
