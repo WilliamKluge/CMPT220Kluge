@@ -15,10 +15,10 @@ public class driver_lab25 {
     public static void main(String[] args) {
         // Setup program input
         Scanner input = new Scanner(System.in);
-        // Get value from user
+        // Get values from user
         System.out.print("Enter subtotal and a gratuity rate: ");
-        double subtotal = input.nextInt();
-        double gratuityRate = input.nextInt();
+        int subtotal = input.nextInt();
+        int gratuityRate = input.nextInt();
         // Calculate gratuity
         double gratuity = subtotal * gratuityRate / 100.0;
         // Display output to user
