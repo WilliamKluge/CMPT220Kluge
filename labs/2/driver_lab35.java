@@ -5,10 +5,10 @@ import java.util.Scanner;
  * @author William Kluge
  *   Contact: klugewilliam@gmail.com
  */
-public class FutureDates {
+public class driver_lab35 {
 
   /**
-   * Main function for the FutureDates program
+   * Main function for the driver_lab35 program
    * @param args Arguments are not implemented in this program
    */
   public static void main(String[] args) {

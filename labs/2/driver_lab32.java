@@ -5,7 +5,7 @@ import java.util.Scanner;
  * @author William Kluge
  *   Contact: klugewilliam@gmail.com
  */
-public class AdditionQuiz {
+public class driver_lab32 {
 
   /**
    * Main method for the addition quiz program
