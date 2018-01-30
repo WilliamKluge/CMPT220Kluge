@@ -1,3 +1,6 @@
+# Misc Uncessesary Files
+*.ini
+
 # IntelliJ IDEA Files
 *.idea
 
