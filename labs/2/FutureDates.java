@@ -23,7 +23,7 @@ public class FutureDates {
 
     // Calculate the result
     String currentDay = calculateDay(day);
-    String futureDay = calculateDay(days_forward % 7 + day);
+    String futureDay = calculateDay((day + days_forward) % 7);
 
     // Show the result
     System.out.format("Today is %s and the future day is %s", currentDay, futureDay);
