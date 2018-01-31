@@ -2,13 +2,14 @@ import java.util.Scanner;
 
 /**
  * Program to check what day of the week it will be x days from the present day
- * @author William Kluge
- *   Contact: klugewilliam@gmail.com
+ *
+ * @author William Kluge Contact: klugewilliam@gmail.com
  */
 public class driver_lab35 {
 
   /**
    * Main function for the driver_lab35 program
+   *
    * @param args Arguments are not implemented in this program
    */
   public static void main(String[] args) {
@@ -16,7 +17,7 @@ public class driver_lab35 {
     Scanner input = new Scanner(System.in);
 
     // Prompt user and get input
-    System.out.print("Enter the current day of the week represented by an integer: ");
+    System.out.print("Enter the current day of the week represented by a positive integer: ");
     int day = input.nextInt();
     System.out.print("Enter the number of days to calculate forward: ");
     int days_forward = input.nextInt();
@@ -32,6 +33,7 @@ public class driver_lab35 {
 
   /**
    * Method to determine the day of the week based on an integer
+   *
    * @param day Integer representing the day of the week (0-6)
    * @return String representing the day of the week
    */

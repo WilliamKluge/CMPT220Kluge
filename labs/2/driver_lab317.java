@@ -23,7 +23,12 @@ public class driver_lab317 {
     System.out.print("Rock (0), Paper (1), or Scissors (2)? ");
     int user_answer = input.nextInt();
 
-    // Check winner
+    while (user_answer < 0 ^ user_answer > 2) {
+      System.out.print("Entered number is not 0-2, please enter a number in the specified range");
+      user_answer = input.nextInt();
+    }
+
+    // Check and display winner
     String message;
 
     if (computer_answer == user_answer) {
@@ -58,7 +63,8 @@ public class driver_lab317 {
         result = "Scissors";
         break;
       default: // Error
-        System.out.println("Did not get a number 0-2, please try again.");
+        System.out.println("Something happened to the memory of this program cause this should be "
+            + "impossible");
         break;
     }
 

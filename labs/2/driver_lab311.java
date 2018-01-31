@@ -2,13 +2,14 @@ import java.util.Scanner;
 
 /**
  * Program to check how many days are in a given month
- * @author William Kluge
- *   Contact: klugewilliam@gmail.com
+ *
+ * @author William Kluge Contact: klugewilliam@gmail.com
  */
 public class driver_lab311 {
 
   /**
    * Main function for the driver_lab311 program
+   *
    * @param args Arguments are not implemented in this program
    */
   public static void main(String[] args) {
@@ -18,8 +19,17 @@ public class driver_lab311 {
     // Prompt user and get input
     System.out.print("Enter the month to calculate for (1-12): ");
     int month = input.nextInt();
-    System.out.print("Enter the year to calculate for (>0000): ");
+    while (month < 1 ^ month > 12) {
+      System.out.print("Entered number is not 1-12, enter a number in the specified range: ");
+      month = input.nextInt();
+    }
+
+    System.out.print("Enter the year to calculate for (>0): ");
     int year = input.nextInt();
+    while (year < 0) {
+      System.out.print("Entered number is not >0, enter a number in the specified range: ");
+      year = input.nextInt();
+    }
 
     // Calculate the result
     String month_name = "";
@@ -32,10 +42,11 @@ public class driver_lab311 {
         break;
       case 2: // February
         month_name = "February";
-        if (isLeapYear(year))
+        if (isLeapYear(year)) {
           days = 29;
-        else
+        } else {
           days = 28;
+        }
         break;
       case 3: // March
         month_name = "March";
@@ -78,7 +89,7 @@ public class driver_lab311 {
         days = 31;
         break;
       default:
-        System.out.println("You did not enter a valid month number");
+        System.out.println("Something happened to your memory because this should be impossible");
     }
 
     System.out.format("%s in %d had %d days", month_name, year, days);
@@ -87,6 +98,7 @@ public class driver_lab311 {
 
   /**
    * Checks if the given year is a leap year
+   *
    * @param year Year to calculate for
    * @return If the given year is a leap year
    */

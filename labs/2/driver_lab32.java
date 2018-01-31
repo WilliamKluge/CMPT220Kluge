@@ -2,8 +2,8 @@ import java.util.Scanner;
 
 /**
  * Program to generate three pseudo-random numbers and quiz the user on their sum
- * @author William Kluge
- *   Contact: klugewilliam@gmail.com
+ *
+ * @author William Kluge Contact: klugewilliam@gmail.com
  */
 public class driver_lab32 {
 
