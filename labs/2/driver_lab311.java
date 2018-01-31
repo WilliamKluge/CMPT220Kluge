@@ -5,7 +5,7 @@ import java.util.Scanner;
  * @author William Kluge
  *   Contact: klugewilliam@gmail.com
  */
-public class driver_311 {
+public class driver_lab311 {
 
   /**
    * Main function for the driver_lab311 program
