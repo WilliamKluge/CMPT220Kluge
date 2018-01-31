@@ -46,16 +46,4 @@ public class driver_lab421 {
 
   }
 
-  /**
-   * Checks the specified spot in the string for if it is a dash
-   *
-   * @param source String to check in
-   * @param pos Position in the string to check
-   * @return If the specified character is a dash
-   */
-  private static boolean checkDash(String source, int pos) {
-    return source.charAt(pos) == '-';
-  }
-
-
 }
