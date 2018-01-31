@@ -7,6 +7,11 @@ import java.util.Scanner;
  */
 public class driver_lab413 {
 
+  /**
+   * Main method for driver_lab413
+   *
+   * @param args This program does not utilize arguments
+   */
   public static void main(String[] args) {
     // Setup input
     Scanner input = new Scanner(System.in);
