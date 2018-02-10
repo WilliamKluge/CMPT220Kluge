@@ -16,7 +16,7 @@ public class driver_lab61 {
 
     for (int i = 0; i < 10; ++i) {
       for (int j = 1; j <= 10; ++j) {
-        table[i][j - 1] = pentogonalNumber(i * 10 + j);
+        table[i][j - 1] = pentagonalNumber(i * 10 + j);
       }
     }
 
@@ -33,7 +33,7 @@ public class driver_lab61 {
    * @param n Number to find pentagonal for
    * @return Pentagonal number associated with n
    */
-  private static int pentogonalNumber(int n) {
+  private static int pentagonalNumber(int n) {
     return n * (3 * n - 1) / 2;
   }
 
