@@ -2,7 +2,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 /**
- * Program to
+ * Program to print an n-by-n matrix
  *
  * @author William Kluge Contact: klugewilliam@gmail.com
  */
