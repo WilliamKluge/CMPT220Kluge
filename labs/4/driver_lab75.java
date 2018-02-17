@@ -18,7 +18,7 @@ public class driver_lab75 {
         // Setup input
         Scanner input = new Scanner(System.in);
 
-        // Get the amount of each paper size he has, starting with A2
+        // Get the numbers
         int[] numbers = Arrays.stream(input.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
         ArrayList<Integer> printedNumbers = new ArrayList<>();
 
