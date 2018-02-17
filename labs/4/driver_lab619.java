@@ -29,7 +29,7 @@ public class driver_lab619 {
      * @param side1 First side of the triangle
      * @param side2 Second side of the triangle
      * @param side3 Third side of the triangle
-     * @return
+     * @return If the triangle is valid
      */
     private static boolean isValid(double side1, double side2, double side3) {
 
@@ -43,17 +43,15 @@ public class driver_lab619 {
     }
 
     /**
-     *
-     * @param side1
-     * @param side2
-     * @param side3
-     * @return
+     * Finds the area of the triangle
+     * @param side1 First side of triangle
+     * @param side2 Second side of triangle
+     * @param side3 Third side of triangle
+     * @return Area of triangle
      */
     private static double area(double side1, double side2, double side3) {
 
-        double height = Math.sqrt(Math.pow(side1/2, 2) + Math.pow(side2, 2));
-
-        return side3 * height;
+        return 0.5 * side1 * side2 * Math.sin(side3);
 
     }
 }
