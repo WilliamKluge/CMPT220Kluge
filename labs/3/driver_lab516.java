@@ -3,6 +3,8 @@
  *
  * @author William Kluge Contact: klugewilliam@gmail.com
  */
+ // JA: This is the wrong problem. It was supposed to print the prime factors
+ // of a number
 public class driver_lab516 {
 
   /**
