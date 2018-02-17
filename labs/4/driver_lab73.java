@@ -2,7 +2,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 /**
- * Program to count the occurance of numbers
+ * Program to count the occurrence of numbers
  *
  * @author William Kluge Contact: klugewilliam@gmail.com
  */
