@@ -17,27 +17,50 @@ public class driver_proj1 {
     // Get the amount of each paper size he has, starting with A2
     int[] paperCounts = Arrays.stream(input.nextLine().split(" "))
         .mapToInt(Integer::parseInt).toArray();
+    int[] combinedPieces = new int[paperCounts.length];
 
     double tapeLength = 0;
+    boolean enoughPaper = false;
 
-    // Iterate through the amounts of paper he has
-    for (int i = minPaperSize - 2; i >= 0; --i) {
-      int combinedPieces = (i == 0) ? 1 : paperCounts[i] / 2;
-      tapeLength += calculateLongSideLength(i + 2) * combinedPieces;
+    int index = 1;
 
-      paperCounts[i] -= combinedPieces * 2;
-
-      if (i != 0)
-        paperCounts[i - 1] += combinedPieces;
-
+    while (paperCounts[0] < 2 && index < paperCounts.length) {
+      while (paperCounts[index] >= 2 && paperCounts[0] < 2) {
+        tapeLength += promoteNext(paperCounts, index);
+      }
+      ++index;
     }
 
-    // Account for extra pieces
-    for (int i = 1; i < paperCounts.length; ++i) {
-
-    }
-
+//    // Iterate through the amounts of paper he has
+//    for (int i = minPaperSize - 2; i >= 0; --i) {
+//      if (paperCounts[i] + combinedPieces[i] < 2)
+//        continue;
+//
+//      int combinations = (paperCounts[i] + combinedPieces[i]) / 2;
+//      tapeLength += calculateLongSideLength(i + 2) * ((i == 0) ? 1 : combinations);
+//
+//      if (i != 0) {
+//        // Remove pieces that were combined to next size
+//        subtractFromArrays(paperCounts, combinedPieces, i, combinations * 2);
+//        combinedPieces[i - 1] += combinations; // Add the combined pieces
+//      }
+//
+//    }
+//
+//    if (paperCounts[0] + combinedPieces[0] >= 2) {
+//      // If we're at 1 = 0 and there are 2 or more pieces of A2 paper
+//      enoughPaper = true;
+//      subtractFromArrays(paperCounts, combinedPieces, 0, 2);
+//      tapeLength -= calculateLongSideLength(3) * combinedPieces[0];
+//    }
+//    // If we combine a small piece into a large piece then account that it
+//    // only factors in one set of tape usage
+//    for (int i = 0; i < paperCounts.length; ++i)
+//      // Subtract the extra tape used to make unneeded pieces
+//      tapeLength -= calculateLongSideLength(i + 3) * combinedPieces[i];
+//
     if (paperCounts[0] >= 2) {
+      tapeLength += calculateLongSideLength(2);
       System.out.println(tapeLength);
     } else {
       System.out.println("impossible");
@@ -58,6 +81,32 @@ public class driver_proj1 {
     }
 
     return currentLargestSide;
+  }
+
+  private static void subtractFromArrays(int[] array1, int[] array2, int index, int num) {
+
+    if (array2[index] >= num) {
+      array2[index] -= num;
+    } else {
+      array1[index] -= num - array2[index];
+      array2[index] = 0;
+    }
+
+  }
+
+  private static double promoteNext(int[] pieces, int index) {
+
+    double tapeUsed = 0;
+
+    if (index < pieces.length && index > 0 && pieces[index] >= 2) {
+      pieces[index - 1] += 1;
+      pieces[index] -= 2;
+      tapeUsed += calculateLongSideLength(index + 2);
+      tapeUsed += promoteNext(pieces, index - 1);
+    }
+
+    return tapeUsed;
+
   }
 
 }
