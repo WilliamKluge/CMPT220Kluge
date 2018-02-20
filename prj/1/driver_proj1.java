@@ -22,15 +22,25 @@ public class driver_proj1 {
 
     // Iterate through the amounts of paper he has
     for (int i = minPaperSize - 2; i >= 0; --i) {
-      int combinedPieces = paperCounts[i] / 2;
+      int combinedPieces = (i == 0) ? 1 : paperCounts[i] / 2;
       tapeLength += calculateLongSideLength(i + 2) * combinedPieces;
 
-      if (i != 0) {
-        paperCounts[i] -= combinedPieces * 2;
+      paperCounts[i] -= combinedPieces * 2;
+
+      if (i != 0)
         paperCounts[i - 1] += combinedPieces;
 
-      }
+    }
 
+    // Account for extra pieces
+    for (int i = 1; i < paperCounts.length; ++i) {
+
+    }
+
+    if (paperCounts[0] >= 2) {
+      System.out.println(tapeLength);
+    } else {
+      System.out.println("impossible");
     }
 
   }
