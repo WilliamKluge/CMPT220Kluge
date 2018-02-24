@@ -8,6 +8,10 @@ import java.util.Scanner;
  */
 public class driver_proj1 {
 
+  /**
+   * Main method for the A! paper program
+   * @param args This program does not use command line arguments
+   */
   public static void main(String args[]) {
     // Setup input
     Scanner input = new Scanner(System.in);
@@ -43,6 +47,9 @@ public class driver_proj1 {
 
   /**
    * Calculates the pieces needed of the next tier to complete the paper
+   * @param pieces Array of pieces of paper to work with
+   * @param index Index of pieces to start at
+   * @return The pieces of the current size needed to finish the paper
    */
   private static int neededPieces(int[] pieces, int index) {
 
@@ -50,11 +57,8 @@ public class driver_proj1 {
 
     missingPieces[0] = 2 - pieces[0];
 
-    for (int i = 1; i < missingPieces.length; ++i) {
-
+    for (int i = 1; i < missingPieces.length; ++i)
       missingPieces[i] = (missingPieces[i - 1] * 2) - pieces[i];
-
-    }
 
     return missingPieces[index];
 
@@ -68,9 +72,8 @@ public class driver_proj1 {
    */
   private static double calculateLongSideLength(int paperSize) {
     double currentLargestSide = Math.pow(2, -3.0 / 4);
-    for (int i = 3; i <= paperSize; ++i) {
+    for (int i = 3; i <= paperSize; ++i)
       currentLargestSide *= Math.sqrt(0.5);
-    }
 
     return currentLargestSide;
   }
