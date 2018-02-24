@@ -20,18 +20,43 @@ public class driver_proj1 {
 
     double tapeLength = 0;
 
-    // Iterate through the amounts of paper he has
-    for (int i = minPaperSize - 2; i >= 0; --i) {
-      int combinedPieces = paperCounts[i] / 2;
-      tapeLength += calculateLongSideLength(i + 2) * combinedPieces;
+    int index = paperCounts.length - 1;
 
-      if (i != 0) {
-        paperCounts[i] -= combinedPieces * 2;
-        paperCounts[i - 1] += combinedPieces;
+    if (neededPieces(paperCounts, paperCounts.length - 1) > 0) {
+      System.out.println("impossible");
+      return;
+    }
 
-      }
+    for (int i = index; i > 0 && paperCounts[i] >= 2; --i) {
+      int takenPieces = paperCounts[i] - (neededPieces(paperCounts, i) * -1);
+      paperCounts[i - 1] += takenPieces / 2;
+      paperCounts[i] -= takenPieces;
+      tapeLength += calculateLongSideLength(i + 2) * (takenPieces / 2);
+    }
+
+    if (paperCounts[0] >= 2) {
+      tapeLength += calculateLongSideLength(2);
+      System.out.println(tapeLength);
+    }
+
+  }
+
+  /**
+   * Calculates the pieces needed of the next tier to complete the paper
+   */
+  private static int neededPieces(int[] pieces, int index) {
+
+    int[] missingPieces = new int[index + 1];
+
+    missingPieces[0] = 2 - pieces[0];
+
+    for (int i = 1; i < missingPieces.length; ++i) {
+
+      missingPieces[i] = (missingPieces[i - 1] * 2) - pieces[i];
 
     }
+
+    return missingPieces[index];
 
   }
 
