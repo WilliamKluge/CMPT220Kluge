@@ -18,6 +18,8 @@ public class driver_lab613 {
 
         for (int i = 1; i < 21; ++i) {
             table[i] = new String[]{Integer.toString(i), Double.toString(m(i))};
+			// JA: Once you store is as a string you won't be able to format the 
+			// number of decimals
         }
 
         for (Object[] row :
