@@ -14,7 +14,7 @@ public class driver_lab619 {
      */
     public static void main(String[] args) {
 
-        Scanner input = new Scanner(System.in);
+        Scanner input = new Scanner(System.in); // JA: Ypou should prompt the user
         double one = input.nextDouble();
         double two = input.nextDouble();
         double three = input.nextDouble();
@@ -51,7 +51,7 @@ public class driver_lab619 {
      */
     private static double area(double side1, double side2, double side3) {
 
-        return 0.5 * side1 * side2 * Math.sin(side3);
+        return 0.5 * side1 * side2 * Math.sin(side3); // JA: Where did you get this formula?
 
     }
 }

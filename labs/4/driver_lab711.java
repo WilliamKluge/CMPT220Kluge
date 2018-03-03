@@ -55,6 +55,7 @@ public class driver_lab711 {
 
         for (double number : numbers)
             sum += Math.pow(number - mean, 2);
+		summ / = (numbers.length - 1); // JA
 
         return Math.sqrt(sum);
 
