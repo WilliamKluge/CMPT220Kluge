@@ -5,9 +5,7 @@ package Lab103;
  */
 public class MyInteger {
 
-  /**
-   * The value represented by this object
-   */
+  /* The value represented by this object */
   private int value;
 
   /**
