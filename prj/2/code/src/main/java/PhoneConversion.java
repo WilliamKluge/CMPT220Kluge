@@ -155,6 +155,7 @@ public class PhoneConversion {
     DECtalkPhones.put("ignore", ""); // Anything from CMU that can just be ignored
     DECtalkPhones.put("oor_as_in_poor", "ur"); // TODO test
     DECtalkPhones.put("e_as_in_herd", "ir"); // TODO test, probably need something better
+    DECtalkPhones.put("a_as_in_ah", "aa");
   }
 
   /**

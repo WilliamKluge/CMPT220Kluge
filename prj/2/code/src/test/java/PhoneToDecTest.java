@@ -28,9 +28,10 @@ import java.util.Date;
  */
 public class PhoneToDecTest {
 
-  private final static String TEST_FILE = "samples/test.wav";
-
   public static void main(String[] args) throws Exception {
+
+    final String TEST_FILE = args[0];
+
     System.out.println("Loading models...");
 
     Configuration configuration = new Configuration();
@@ -70,6 +71,8 @@ public class PhoneToDecTest {
 
       PitchAnalysis pitchAnalysis = new PitchAnalysis(TEST_FILE);
 
+      long lastEndTime = 0; // Time that the last word ended (for inserting pauses)
+
       for (WordResult r : speechResult.getWords()) {
         try {
 
@@ -81,7 +84,17 @@ public class PhoneToDecTest {
             continue;
           }
 
+          // Timing
+
           long timeLength = r.getTimeFrame().length();
+
+          long thisStartTime = r.getTimeFrame().getStart();
+
+          if (thisStartTime != lastEndTime) {
+            DECtalkFile.write("_<" + (thisStartTime - lastEndTime) + ",1>");
+          }
+
+          lastEndTime = thisStartTime;
 
           // Pitch Analysis
 
