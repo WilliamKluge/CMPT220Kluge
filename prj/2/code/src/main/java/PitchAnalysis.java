@@ -9,6 +9,7 @@ import edu.cmu.sphinx.util.TimeFrame;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.function.Predicate;
 import javafx.util.Pair;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
@@ -46,6 +47,10 @@ public class PitchAnalysis {
     adp.addAudioProcessor(
         new PitchProcessor(PitchEstimationAlgorithm.YIN, SAMPLE_RATE, BUFFER_SIZE, handler));
     adp.run();
+
+    // Remove pitches equal to -1, cause they lying TODO update other methods now that this happens
+    Predicate<Pair<Double, Float>> pitchPredicate = p-> p.getValue() == -1;
+    pitches.removeIf(pitchPredicate);
 
   }
 

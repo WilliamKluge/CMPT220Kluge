@@ -30,7 +30,7 @@ public class ReplaceWithPhone {
     try {
       String in = buf.readLine();
       while (in != null) {
-        lyrics.append(in + "\n");
+        lyrics.append(in).append("\n");
         in = buf.readLine();
       }
       buf.close();

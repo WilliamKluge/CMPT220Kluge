@@ -1,10 +1,8 @@
 
 import edu.cmu.sphinx.alignment.LongTextAligner;
-import edu.cmu.sphinx.api.Configuration;
 import edu.cmu.sphinx.api.SpeechAligner;
 import edu.cmu.sphinx.result.WordResult;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -92,6 +90,41 @@ public class MatchWithLyrics {
         System.out.format("+ %-25s [%s]\n", result.getWord().getSpelling(), result.getTimeFrame());
       }
     }
+
+  }
+
+  /**
+   * Gets the word alignment matching lyrics to an audio file
+   * @param lyricFilePath
+   * @param audioFilePath
+   * @return
+   * @throws IOException
+   */
+  public static List<WordResult> getWordAlignment(String lyricFilePath, String audioFilePath)
+      throws IOException {
+
+    ///// Read lyrics from file /////
+
+    InputStream lyricsFile;
+    lyricsFile = new FileInputStream(lyricFilePath);
+
+    BufferedReader buf = new BufferedReader(new InputStreamReader(lyricsFile));
+
+    String lyrics;
+
+    lyrics = buf.readLine();
+    buf.close();
+    lyricsFile.close();
+
+
+    ///// Align speech /////
+
+    SpeechAligner aligner = new SpeechAligner("resource:/edu/cmu/sphinx/models/en-us/en-us",
+        "resource:/edu/cmu/sphinx/models/en-us/cmudict-en-us.dict",
+        null);
+    List<WordResult> results = aligner.align(new URL(audioFilePath), lyrics);
+
+    return results;
 
   }
 

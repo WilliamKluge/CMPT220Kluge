@@ -1,16 +1,6 @@
-/*
- * Copyright 2014 Carnegie Mellon University.
- * All Rights Reserved.  Use is subject to license terms.
- *
- * See the file "license.terms" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL
- * WARRANTIES.
- */
-
 import edu.cmu.sphinx.api.Configuration;
 import edu.cmu.sphinx.api.Context;
 import edu.cmu.sphinx.api.SpeechResult;
-import edu.cmu.sphinx.linguist.dictionary.Pronunciation;
 import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.result.Result;
 import edu.cmu.sphinx.result.WordResult;
@@ -19,42 +9,36 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Scanner;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
- * A simple example that shows how to transcribe a continuous audio file that has multiple
- * utterances in it.
+ * Uses lyrics to find the time of each word, then takes the phones in that time frame and matches/
+ * smashes them to fit the word properly in that frame.
  */
-public class PhoneToDecTest {
+public class LyricPhoneTimeMatch {
   /* Number of milliseconds that are allowed between phones before a pause is added */
   private static final int PHONE_GAP_PAUSE = 10;
-  /* If all phones should be replaced with "uw"(oo)s */
-  private static final boolean BEAT_ONLY = false;
   /* If the program should not wait if the pause is more than 1 second */
   private static final boolean DELETE_LONG_PAUSES = true;
-  /* Run with user interaction */
-  private static final boolean INTERACTIVE_MODE = true;
 
-  private static void playClipSection(Clip clip, TimeFrame timeFrame) {
+  public static void main(String[] args) throws IOException, UnsupportedAudioFileException {
 
-    double framesPerMillisecond = clip.getFrameLength() / (clip.getMicrosecondLength() * 1000.0);
-    int phoneStartFrame = (int) Math.floor(timeFrame.getStart() * framesPerMillisecond);
-    int phoneEndFrame = (int) Math.ceil(timeFrame.getEnd() * framesPerMillisecond);
+    // Audio file to work with
+    final String TEST_AUDIO_FILE = args[0];
+    // Lyrics file to work with
+    final String TEST_LYRICS_FILE = args[1];
 
-    clip.setLoopPoints(phoneStartFrame, phoneEndFrame);
-
-    clip.loop(0);
-
-  }
-
-  public static void main(String[] args) throws Exception {
+    List<WordResult> results = MatchWithLyrics.getWordAlignment(TEST_LYRICS_FILE, TEST_AUDIO_FILE);
 
     final String TEST_FILE = args[0];
 
@@ -65,14 +49,6 @@ public class PhoneToDecTest {
     }
 
     Scanner input = new Scanner(System.in);
-
-    ///// Open audio input stream /////
-    AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(TEST_FILE));
-    // load the sound into memory (a Clip)
-    DataLine.Info info = new DataLine.Info(Clip.class, audioInputStream.getFormat());
-    Clip clip;
-    clip = (Clip) AudioSystem.getLine(info);
-    clip.open(audioInputStream);
 
     ///// Setup Sphinx /////
 
@@ -115,7 +91,7 @@ public class PhoneToDecTest {
 
     while ((result = recognizer.recognize()) != null) {
       DECtalkFile.write("[");
-
+// TODO check timeframes of words and see if the result here is in that timeframe than ask about replacement
       SpeechResult speechResult = new SpeechResult(result);
       System.out.format("Hypothesis: %s\n", speechResult.getHypothesis());
       System.out.println("List of recognized words and their times:");
@@ -123,8 +99,6 @@ public class PhoneToDecTest {
       PitchAnalysis pitchAnalysis = new PitchAnalysis(TEST_FILE);
 
       long lastEndTime = 0; // Time that the last word ended (for inserting pauses)
-
-      StringBuilder chosenPath = new StringBuilder();
 
       for (WordResult r : speechResult.getWords()) {
         try {
@@ -151,23 +125,11 @@ public class PhoneToDecTest {
 
           // Ask user about clip
 
-          if (INTERACTIVE_MODE) {
 
-            playClipSection(clip, r.getTimeFrame());
-
-            System.out.println("Did this sound like the phone " + pronunciation + " (y/n)? ");
-
-            if (input.nextLine().equals("n")) {
-              System.out.print("Enter the correct phone: ");
-              pronunciation = input.nextLine();
-            }
-
-          }
 
           // Output
 
-          String DECPronunciation = (BEAT_ONLY) ? "uw" :
-              PhoneConversion.convertCMUPhone(pronunciation);
+          String DECPronunciation = PhoneConversion.convertCMUPhone(pronunciation);
 
           if (DECPronunciation.equals("")) {
             continue;
