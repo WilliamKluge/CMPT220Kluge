@@ -10,3 +10,4 @@ standalone gradle project.
 * TarsosDSP - Used for detecting the pitch of phones (A jar file is bundled with this source, 
 which is included with Gradle)
 * Sphinx4 - Needed to detect phones from audio (included with Gradle)
+* BasicPlayer v3.0 - Audio file playback

@@ -15,6 +15,7 @@ import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.result.Result;
 import edu.cmu.sphinx.result.WordResult;
 import edu.cmu.sphinx.util.TimeFrame;
+import java.applet.AudioClip;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +28,9 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
+import sun.audio.AudioData;
+import sun.audio.AudioDataStream;
+import sun.audio.AudioPlayer;
 
 /**
  * A simple example that shows how to transcribe a continuous audio file that has multiple
@@ -151,7 +155,19 @@ public class PhoneToDecTest {
 
           if (INTERACTIVE_MODE) {
 
-            playClipSection(clip, r.getTimeFrame());
+            //playClipSection(clip, r.getTimeFrame());
+            int frameshit = (int) (clip.getFrameLength() / (clip.getMicrosecondLength() * 1000.0));
+            int arrsize = (int)(r.getTimeFrame().length() * frameshit);
+            System.out.println(arrsize + " frames being used");
+            byte[] test = new byte[arrsize];
+            audioInputStream.read(test, 0, 100000);
+
+            // Create the AudioData object from the byte array
+            AudioData audiodata = new AudioData(test);
+            // Create an AudioDataStream to play back
+            AudioDataStream audioStream = new AudioDataStream(audiodata);
+            // Play the sound
+            AudioPlayer.player.start(audioStream);
 
             System.out.println("Did this sound like the phone " + pronunciation + " (y/n)? ");
 
