@@ -9,7 +9,7 @@ public class DECtalkPhone {
   /* Phone stored by this class */
   private String phone;
   /* Pitch of this phone */
-  private Double toneNumber;
+  private int toneNumber;
   /* Time frame the phone took place in */
   private TimeFrame timeFrame;
 
@@ -86,14 +86,14 @@ public class DECtalkPhone {
   /**
    * @return Tone number of this phone
    */
-  public Double getToneNumber() {
+  public int getToneNumber() {
     return toneNumber;
   }
 
   /**
    * @param toneNumber DECtalk tone number to set this phone to
    */
-  public void setToneNumber(Double toneNumber) {
+  public void setToneNumber(int toneNumber) {
     this.toneNumber = toneNumber;
   }
 

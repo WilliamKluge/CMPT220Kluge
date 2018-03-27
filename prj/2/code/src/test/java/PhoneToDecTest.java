@@ -22,8 +22,10 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -94,8 +96,9 @@ public class PhoneToDecTest {
     Context context = new Context(configuration);
     context.setLocalProperty("decoder->searchManager", "allphoneSearchManager");
     Recognizer recognizer = context.getInstance(Recognizer.class);
-    InputStream stream = new FileInputStream(new File(TEST_FILE));
-    //stream.skip(44);
+    File sourceFile = new File(TEST_FILE);
+    InputStream stream = new FileInputStream(sourceFile);
+    SourceAudioPlayer sourceAudioPlayer = new SourceAudioPlayer(sourceFile);
 
     // Simple recognition with generic model
     recognizer.allocate();
@@ -116,6 +119,7 @@ public class PhoneToDecTest {
         + "_out.txt";
     BufferedWriter DECtalkFile = new BufferedWriter(new FileWriter(fileName, true));
     DECtalkFile.write("[:phoneme on]\n");
+    ArrayList<DECtalkPhone> dectalkPhones = new ArrayList<>();
 
     while ((result = recognizer.recognize()) != null) {
       DECtalkFile.write("[");
@@ -131,64 +135,49 @@ public class PhoneToDecTest {
       for (WordResult r : speechResult.getWords()) {
         try {
 
-          // Pronunciation
-
-          String pronunciation = r.getWord().toString();
-
-          // Timing
-
-          long timeLength = r.getTimeFrame().length();
+          DECtalkPhone phone = new DECtalkPhone(r.getWord().toString(), r.getTimeFrame());
 
           long thisStartTime = r.getTimeFrame().getStart();
 
           if (thisStartTime > lastEndTime + PHONE_GAP_PAUSE && !DELETE_LONG_PAUSES) {
-            DECtalkFile.write("_<" + (thisStartTime - lastEndTime) + ">");
+            dectalkPhones.add(new DECtalkPhone(new TimeFrame(lastEndTime + 1, thisStartTime - 1)));
           }
 
           lastEndTime = r.getTimeFrame().getEnd();
 
           // Pitch Analysis
 
-          int toneNumber = pitchAnalysis.getDECtalkToneNumber(r.getTimeFrame());
+          phone.setToneNumber(pitchAnalysis.getDECtalkToneNumber(r.getTimeFrame()));
 
           // Ask user about clip
 
           if (INTERACTIVE_MODE) {
 
-            //playClipSection(clip, r.getTimeFrame());
-            int frameshit = (int) (clip.getFrameLength() / (clip.getMicrosecondLength() * 1000.0));
-            int arrsize = (int)(r.getTimeFrame().length() * frameshit);
-            System.out.println(arrsize + " frames being used");
-            byte[] test = new byte[arrsize];
-            audioInputStream.read(test, 0, 100000);
+            sourceAudioPlayer.playPhoneSection(phone);
+            TimeUnit.SECONDS.sleep(phone.getTimeFrame().length() / 1000); //
 
-            // Create the AudioData object from the byte array
-            AudioData audiodata = new AudioData(test);
-            // Create an AudioDataStream to play back
-            AudioDataStream audioStream = new AudioDataStream(audiodata);
-            // Play the sound
-            AudioPlayer.player.start(audioStream);
+            sourceAudioPlayer.control.pause();
 
-            System.out.println("Did this sound like the phone " + pronunciation + " (y/n)? ");
+            System.out.println("Did this sound like the phone " + phone.getPhone() + " (y/n)? ");
 
             if (input.nextLine().equals("n")) {
               System.out.print("Enter the correct phone: ");
-              pronunciation = input.nextLine();
+              phone.setPhone(input.nextLine());
             }
 
           }
 
           // Output
 
-          String DECPronunciation = (BEAT_ONLY) ? "uw" :
-              PhoneConversion.convertCMUPhone(pronunciation);
+          if (BEAT_ONLY) {
+            phone.setPhone("uw");
+          }
 
-          if (DECPronunciation.equals("")) {
+          if (phone.getPhone().equals("")) {
             continue;
           }
 
-          String DECtalkCode = DECPronunciation + "<" + timeLength + "," + toneNumber + ">";
-          DECtalkFile.write(DECtalkCode);
+          DECtalkFile.write(phone.toString());
           //System.out.println(DECtalkCode);
         } catch (IndexOutOfBoundsException e) {
           System.out.println(e.getMessage());

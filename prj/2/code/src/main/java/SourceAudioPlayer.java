@@ -26,7 +26,7 @@ public class SourceAudioPlayer implements BasicPlayerListener {
   /**
    * Contructor.
    */
-  public SourceAudioPlayer(File sourceFile) {
+  public SourceAudioPlayer(File sourceFile) throws BasicPlayerException {
     out = System.out;
     WavFile wavFile;
     try {
@@ -40,24 +40,40 @@ public class SourceAudioPlayer implements BasicPlayerListener {
       System.err.print("An error occured while preforming WAV file operations on "
           + sourceFile.getAbsolutePath());
     }
+
+
+    // Instantiate BasicPlayer.
+    BasicPlayer player = new BasicPlayer();
+    // BasicPlayer is a BasicController.
+    control = (BasicController) player;
+    // Register BasicPlayerTest to BasicPlayerListener events.
+    // It means that this object will be notified on BasicPlayer
+    // events such as : opened(...), progress(...), stateUpdated(...)
+    player.addBasicPlayerListener(this);
+
+    // Open file, or URL or Stream (shoutcast, icecast) to play.
+    control.open(sourceFile);
+
+    control.play();
+    control.pause();
+
   }
 
   /**
    * Plays the section of audio that a phone occurs in
    * @param dectalkPhone DECtalkPhone to get a time frame to play
    */
-  public void playPhoneSection(DECtalkPhone dectalkPhone) throws BasicPlayerException {
+  public void playPhoneSection(DECtalkPhone dectalkPhone)
+      throws BasicPlayerException, InterruptedException {
 
-    control.seek(dectalkPhone.getTimeFrame().getStart() * bytesPerSecond);
+    control.seek((dectalkPhone.getTimeFrame().getStart() / 1000) * bytesPerSecond);
 
-    try {
-      TimeUnit.MILLISECONDS.sleep(dectalkPhone.getTimeFrame().length());
-    } catch (InterruptedException e) {
-      System.err.println("Interrupted while playing phone sound");
-      e.printStackTrace();
-    }
+    control.resume();
 
-    control.pause();
+    // Set Volume (0 to 1.0).
+    control.setGain(0.85);
+    // Set Pan (-1.0 to 1.0).
+    control.setPan(0.0);
 
   }
 
