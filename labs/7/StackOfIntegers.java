@@ -1,4 +1,4 @@
-package Lab105;
+//package Lab105;
 
 public class StackOfIntegers {
 
