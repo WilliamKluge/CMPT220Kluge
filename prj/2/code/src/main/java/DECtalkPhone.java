@@ -97,4 +97,11 @@ public class DECtalkPhone {
     this.toneNumber = toneNumber;
   }
 
+  /**
+   * @return Time frame this phone happens in
+   */
+  public TimeFrame getTimeFrame() {
+    return timeFrame;
+  }
+
 }
