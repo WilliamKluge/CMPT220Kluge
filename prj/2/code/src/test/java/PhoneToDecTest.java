@@ -124,8 +124,6 @@ public class PhoneToDecTest {
 
       long lastEndTime = 0; // Time that the last word ended (for inserting pauses)
 
-      StringBuilder chosenPath = new StringBuilder();
-
       for (WordResult r : speechResult.getWords()) {
         try {
 
