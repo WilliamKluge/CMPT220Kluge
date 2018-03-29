@@ -1,10 +1,16 @@
 import WavFileHandling.WavFile;
 import WavFileHandling.WavFileException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import javax.sound.sampled.Clip;
+import javazoom.jl.decoder.JavaLayerException;
+import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jlgui.basicplayer.BasicController;
 import javazoom.jlgui.basicplayer.BasicPlayer;
 import javazoom.jlgui.basicplayer.BasicPlayerEvent;
@@ -16,7 +22,9 @@ import javazoom.jlgui.basicplayer.BasicPlayerListener;
  */
 public class SourceAudioPlayer implements BasicPlayerListener {
 
-  /** Used to control the settings and position of the audio playback */
+  /**
+   * Used to control the settings and position of the audio playback
+   */
   public BasicController control;
   /* Where this class should output information */
   private PrintStream out = null;
@@ -26,7 +34,8 @@ public class SourceAudioPlayer implements BasicPlayerListener {
   /**
    * Contructor.
    */
-  public SourceAudioPlayer(File sourceFile) throws BasicPlayerException {
+  public SourceAudioPlayer(File sourceFile)
+      throws BasicPlayerException, FileNotFoundException, JavaLayerException {
     out = System.out;
     WavFile wavFile;
     try {
@@ -41,11 +50,11 @@ public class SourceAudioPlayer implements BasicPlayerListener {
           + sourceFile.getAbsolutePath());
     }
 
-
     // Instantiate BasicPlayer.
     BasicPlayer player = new BasicPlayer();
     // BasicPlayer is a BasicController.
     control = (BasicController) player;
+    Clip audioClip = new
     // Register BasicPlayerTest to BasicPlayerListener events.
     // It means that this object will be notified on BasicPlayer
     // events such as : opened(...), progress(...), stateUpdated(...)
@@ -61,12 +70,18 @@ public class SourceAudioPlayer implements BasicPlayerListener {
 
   /**
    * Plays the section of audio that a phone occurs in
+   *
    * @param dectalkPhone DECtalkPhone to get a time frame to play
    */
   public void playPhoneSection(DECtalkPhone dectalkPhone)
       throws BasicPlayerException, InterruptedException {
 
-    control.seek((dectalkPhone.getTimeFrame().getStart() / 1000) * bytesPerSecond);
+    long seekTo = millisToBytes(dectalkPhone.getTimeFrame().getStart());
+
+    out.println("Seeking to " + seekTo
+        + " bytes | " + dectalkPhone.getTimeFrame().getStart() + " milliseconds");
+
+    control.seek(seekTo);
 
     control.resume();
 
@@ -75,12 +90,19 @@ public class SourceAudioPlayer implements BasicPlayerListener {
     // Set Pan (-1.0 to 1.0).
     control.setPan(0.0);
 
+    out.println("Playing for " + millisToBytes(dectalkPhone.getTimeFrame().length())
+        + " bytes | " + dectalkPhone.getTimeFrame().length() + " milliseconds");
+
+//    TimeUnit.MILLISECONDS.sleep(dectalkPhone.getTimeFrame().length());
+
+    out.println();
+
   }
 
   /**
    * Plays the full audio file
-   * @param filename Name of the file to play
-   * TODO specialize this for this class and its purpose
+   *
+   * @param filename Name of the file to play TODO specialize this for this class and its purpose
    */
   public void play(String filename) {
     // Instantiate BasicPlayer.
@@ -174,4 +196,16 @@ public class SourceAudioPlayer implements BasicPlayerListener {
       out.println(msg);
     }
   }
+
+  /**
+   * Converts a time in milliseconds into bytes using the calculated bytes per second of audio for
+   * the source audio file
+   *
+   * @param millis Millisecond time to convert
+   * @return millis in bytes
+   */
+  private long millisToBytes(long millis) {
+    return (long) Math.ceil((millis / 1000.0) * bytesPerSecond);
+  }
+
 }
