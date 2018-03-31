@@ -154,9 +154,6 @@ public class PhoneToDecTest {
           if (INTERACTIVE_MODE) {
 
             sourceAudioPlayer.playPhoneSection(phone);
-            TimeUnit.SECONDS.sleep(phone.getTimeFrame().length() / 1000); //
-
-            sourceAudioPlayer.control.pause();
 
             System.out.println("Did this sound like the phone " + phone.getPhone() + " (y/n)? ");
 
