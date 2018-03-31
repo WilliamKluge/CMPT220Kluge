@@ -71,7 +71,7 @@ public class SourceAudioPlayer {
    * @param dectalkPhone DECtalkPhone to get a time frame to play
    */
   public void playPhoneSection(DECtalkPhone dectalkPhone)
-      throws LineUnavailableException, IOException {
+      throws LineUnavailableException, IOException, InterruptedException {
     // Gets the timeframe of the phone
     TimeFrame phoneTimeFrame = dectalkPhone.getTimeFrame();
 

@@ -1,5 +1,6 @@
 import edu.cmu.sphinx.util.TimeFrame;
 import java.sql.Time;
+import java.util.concurrent.TimeUnit;
 import javax.sound.sampled.Clip;
 
 /**
@@ -56,11 +57,12 @@ public class DECtalkPhone {
   }
 
   /**
-   * Plays the phone's source audio once
+   * Plays the phone's source audio once.
    */
-  public void playClip() {
+  public void playClip() throws InterruptedException {
 
     clip.loop(1);
+    TimeUnit.MILLISECONDS.sleep(timeFrame.length());
     clip.stop();
 
   }
