@@ -15,14 +15,14 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  */
 public class DECPhoneCollection {
 
-  /**
+  /*
    * Index of the phone currently being worked with.
    *
    * Set up like this so that this object does not need to handle any looping and outside methods
    * can preform iteration checks knowing what the index currently is without worrying about the
    * amount of phones changing.
    */
-  public int currentPhoneIndex;
+  private int currentPhoneIndex;
   /* Array of phones that take place in the source audio in sequential order */
   private ArrayList<DECtalkPhone> dectalkPhones;
   /* BufferedWriter to handle output of DECtalk file */
@@ -51,18 +51,13 @@ public class DECPhoneCollection {
     DECtalkFile = new BufferedWriter(new FileWriter(outputFileName, true));
   }
 
-  ///// Current phone methods /////
+  ///// Current phone methods: Handle with the current phone only /////
 
   /**
    * Plays the audio corresponding to the current phone
    */
   public void playCurrentPhone() {
-    try {
-      dectalkPhones.get(currentPhoneIndex).playClip();
-    } catch (InterruptedException e) {
-      System.err.println("Program was interrupted while playing a phone clip");
-      e.printStackTrace();
-    }
+    dectalkPhones.get(currentPhoneIndex).playClip();
   }
 
   /**
@@ -77,10 +72,53 @@ public class DECPhoneCollection {
    * @throws IllegalArgumentException If pronunciation is not a valid DECtalk phone
    */
   public void setCurrentPhonePronunciation(String pronunciation) throws IllegalArgumentException {
-    if (!PhoneConversion.DECtalkPhones.containsValue(pronunciation)) {
+    if (!PhoneConversion.isDECPhone(pronunciation)) {
       throw new IllegalArgumentException("The given phone is not recognized by DECtalk");
     }
     dectalkPhones.get(currentPhoneIndex).setPhone(pronunciation);
+  }
+
+  /**
+   * Removes the current phone from the collection.
+   */
+  public void removeCurrentPhone() {
+    dectalkPhones.remove(currentPhoneIndex);
+    --currentPhoneIndex;
+  }
+
+  ///// Surrounding phone methods: Handle the with current phone and phones around it /////
+
+  /**
+   * Plays the audio clip of the next phone
+   */
+  public void playNextPhone() {
+    dectalkPhones.get(currentPhoneIndex + 1).playClip();
+  }
+
+  /**
+   * Play the clips surrounding and including the current phone
+   *
+   * @param reverseCount Number of phones to play from behind the current phone. If this would cause
+   * a phone < 0 to be selected it is adjusted to be the 0th phone.
+   * @param forwardsCount Number of phones to play from in front of the current phone. If this would
+   * cause a phone > the size of the collection to be selected it is adjusted to be the last phone.
+   */
+  public void playSurroundingPhones(int reverseCount, int forwardsCount) {
+    int backCount = currentPhoneIndex - reverseCount; // Makes sure index is not out of range
+    int frontCount = currentPhoneIndex + forwardsCount;
+
+    for (DECtalkPhone phone : dectalkPhones.subList(backCount < 0 ? 0 : backCount,
+        frontCount > dectalkPhones.size() -1 ? dectalkPhones.size() -1 : frontCount)) {
+      phone.playClip();
+    }
+  }
+
+  /**
+   * Squish Extend the previous phone's time frame with this one. The current phone is discarded.
+   */
+  public void squishWithPrevious() {
+    dectalkPhones.get(currentPhoneIndex - 1).absorbPhone(dectalkPhones.get(currentPhoneIndex));
+    removeCurrentPhone();
   }
 
   ///// Output /////
@@ -91,6 +129,8 @@ public class DECPhoneCollection {
    * @throws IOException If the output file cannot properly be accessed
    */
   public void writeDECtalkFile() throws IOException {
+
+    System.out.println("Writing output to file");
 
     DECtalkFile.write("[:phoneme on]\n");
 
@@ -106,7 +146,7 @@ public class DECPhoneCollection {
 
   }
 
-  ///// ArrayList operations /////
+  ///// ArrayList operations: Handle adding, removing, or combining parts of the collection /////
 
   /**
    * Creates an audio clip for a phone then adds it to the end of this collection.
@@ -142,4 +182,24 @@ public class DECPhoneCollection {
     return dectalkPhones.size();
   }
 
+  /**
+   * @return The index of the current phone
+   */
+  public int getCurrentPhoneIndex() {
+    return currentPhoneIndex;
+  }
+
+  /**
+   * Increments the current phone index
+   */
+  public void goToNextPhone() {
+    ++currentPhoneIndex;
+  }
+
+  /**
+   * Start the evaluation process back at the beginning of the array
+   */
+  public void restart() {
+    currentPhoneIndex = 0;
+  }
 }

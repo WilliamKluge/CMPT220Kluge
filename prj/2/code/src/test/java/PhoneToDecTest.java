@@ -151,7 +151,8 @@ public class PhoneToDecTest {
     }
 
     ///// Get user input about generated phones /////
-    while (dectalkPhones.currentPhoneIndex < dectalkPhones.getPhoneCount()) {
+    userInteraction:
+    while (dectalkPhones.getCurrentPhoneIndex() < dectalkPhones.getPhoneCount()) {
       // While the current phone's index is less than the total number of phones
       dectalkPhones.playCurrentPhone();
 
@@ -159,10 +160,54 @@ public class PhoneToDecTest {
           "Did this sound like the phone " + dectalkPhones.getCurrentPhonePronunciation()
               + " (y/n)? ");
 
-      if (input.nextLine().equals("n")) {
-        System.out.print("Enter the correct phone: ");
-        dectalkPhones.setCurrentPhonePronunciation(input.nextLine());
+      String command = input.nextLine();
+
+      commandInput:
+      while (!command.equals("")) { // enter nothing to proceed
+        switch (command) {
+          case "y": // "y" (yes) go to next phone
+            break commandInput;
+          case "n": // "n" (no) correct the phone
+            System.out.print("Enter the correct phone: ");
+            dectalkPhones.setCurrentPhonePronunciation(input.nextLine());
+            break commandInput;
+          case "pa": // "pa" (play again) play the phone again
+            dectalkPhones.playCurrentPhone();
+            break;
+          case "pn": // "pn" (play next) play the next phone in the collection
+            dectalkPhones.playNextPhone();
+            break;
+          case "ps": // "ps" (play surrounding) play the surrounding phones
+            System.out.println("Enter two numbers. First for how many to play back, "
+                + "second for in front");
+            int backwards = input.nextInt();
+            int forwards = input.nextInt();
+            dectalkPhones.playSurroundingPhones(backwards, forwards);
+            input.nextLine(); // Sloppy way of dealing with nextInt not taking EOL
+            break;
+          case "del": // "del" (delete) delete the current phone
+            dectalkPhones.removeCurrentPhone();
+            break commandInput;
+          case "sp": // "sp" (squish previous) squish the current phone's time frame into the
+            // previous phone's time frame
+            dectalkPhones.squishWithPrevious();
+            break commandInput;
+          case "restart" : // "restart" start again from the beginning
+            dectalkPhones.restart();
+            break commandInput;
+          case "w": // "w" (write) write the output file, but continue editing
+            dectalkPhones.writeDECtalkFile();
+            break;
+          case "wq":  // "wq" (write quit) Be done editing phones
+            break userInteraction;
+          default:
+            System.out.println("Command not recognized, try again");
+            break;
+        }
+        command = input.nextLine();
       }
+
+      dectalkPhones.goToNextPhone();
 
     } // End user interaction while loop
 

@@ -88,13 +88,8 @@ public class SourceAudioPlayer {
     fileInputStream.read(clipBytes); // Read clipBytes.length bytes of data into array
     phoneClip.open(format, clipBytes, 0, clipBytes.length); // Open the array as audio
 
-    out.println("Playing for " + phoneTimeFrame.length() * framesPerMillisecond
-        + " frames | " + phoneTimeFrame.length() + " milliseconds");
-
     // Set the phone's clip
     dectalkPhone.setClip(phoneClip);
-
-    out.println();
 
   }
 

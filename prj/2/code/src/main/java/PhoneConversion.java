@@ -159,6 +159,25 @@ public class PhoneConversion {
   }
 
   /**
+   * Checks if the given phone is DECtalk compatible.
+   *
+   * Note: Currently this always returns true. TODO finish possibility checking
+   * @param phone Phone to check
+   * @return If the given phone is valid in DECtalk
+   */
+  public static boolean isDECPhone(String phone) {
+    return true; // TODO finish this to check all possible substrings
+//    for (int from = 0; from < phone.length(); from++) {
+//      for (int to = from + 1; to <= phone.length(); to++) {
+//        if (DECtalkPhones.containsValue(phone.substring(from, to))) {
+//          return true;
+//        }
+//      }
+//    }
+//    return false;
+  }
+
+  /**
    * Converts a CMU phone to a DECtalk phone
    * @param phone Phone to convert
    * @return DECTalk version of the phone

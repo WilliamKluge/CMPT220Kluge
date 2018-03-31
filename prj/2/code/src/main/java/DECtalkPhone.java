@@ -48,6 +48,21 @@ public class DECtalkPhone {
   }
 
   /**
+   * Extends this phone's time frame to the time frame of the given phone. The max of the time
+   * frames is what will be selected as the new time frame.
+   * @param phone Phone to absorb the time frame of
+   */
+  public void absorbPhone(DECtalkPhone phone) {
+    TimeFrame otherPhoneTimeFrame = phone.getTimeFrame();
+    long newStart = timeFrame.getStart() < otherPhoneTimeFrame.getStart() ? timeFrame.getStart() :
+        otherPhoneTimeFrame.getStart();
+    long newEnd = timeFrame.getEnd() > otherPhoneTimeFrame.getEnd() ? timeFrame.getEnd() :
+        otherPhoneTimeFrame.getEnd();
+
+    this.timeFrame = new TimeFrame(newStart, newEnd);
+  }
+
+  /**
    * Sets this phone's tone number to be equal to another phones tone number
    *
    * @param dectalkPhone DECtalkPhone to match the tone number of
@@ -59,10 +74,15 @@ public class DECtalkPhone {
   /**
    * Plays the phone's source audio once.
    */
-  public void playClip() throws InterruptedException {
+  public void playClip() {
 
     clip.loop(1);
-    TimeUnit.MILLISECONDS.sleep(timeFrame.length());
+    try {
+      TimeUnit.MILLISECONDS.sleep(timeFrame.length());
+    } catch (InterruptedException e) {
+      System.err.println("Program was interrupted while playing a phone clip.");
+      e.printStackTrace();
+    }
     clip.stop();
 
   }
