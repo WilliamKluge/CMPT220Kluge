@@ -185,6 +185,9 @@ public class PhoneToDecTest {
             dectalkPhones.playSurroundingPhones(backwards, forwards);
             input.nextLine(); // Sloppy way of dealing with nextInt not taking EOL
             break;
+          case "bal": // "bal" (balance) balance tones numbers for less jarring jumps in pitch
+            dectalkPhones.balanceToneNumbers();
+            break;
           case "del": // "del" (delete) delete the current phone
             dectalkPhones.removeCurrentPhone();
             break commandInput;

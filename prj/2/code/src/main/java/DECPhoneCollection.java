@@ -15,6 +15,19 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  */
 public class DECPhoneCollection {
 
+  /**
+   * Enumerator for setting how tones should be normalized.
+   */
+  public enum ToneSelectSetting {
+    FAVOR_HIGH,
+    FAVOR_LOW,
+    AVERAGE
+  }
+
+  /**
+   * Setting for how tones should be selected.
+   */
+  public ToneSelectSetting defaultToneSelectSetting;
   /*
    * Index of the phone currently being worked with.
    *
@@ -23,6 +36,8 @@ public class DECPhoneCollection {
    * amount of phones changing.
    */
   private int currentPhoneIndex;
+  /* Number of phones that have been removed from the collection (for saving progress) */
+  private int removedPhoneCount;
   /* Array of phones that take place in the source audio in sequential order */
   private ArrayList<DECtalkPhone> dectalkPhones;
   /* BufferedWriter to handle output of DECtalk file */
@@ -39,6 +54,8 @@ public class DECPhoneCollection {
       throws IOException, LineUnavailableException, UnsupportedAudioFileException {
     dectalkPhones = new ArrayList<>();
     currentPhoneIndex = 0;
+    removedPhoneCount = 0;
+    defaultToneSelectSetting = ToneSelectSetting.AVERAGE;
 
     sourceAudioPlayer = new SourceAudioPlayer(sourceFile);
 
@@ -121,6 +138,74 @@ public class DECPhoneCollection {
     removeCurrentPhone();
   }
 
+  /**
+   * Balances the tone numbers of phones with the phones surrounding them for less jarring jumps in
+   * pitch.
+   *
+   * TODO balance tones in a range with each other
+   */
+  public void balanceToneNumbers() {
+    for (int i = 0; i < dectalkPhones.size(); ++i) {
+      balanceBackwards(currentPhoneIndex, defaultToneSelectSetting);
+      balanceForwards(currentPhoneIndex, defaultToneSelectSetting);
+    }
+  }
+
+  /**
+   * Balances two tones based on toneSelectSetting.
+   *
+   * @param toneOne Tone to balance
+   * @param toneTwo Tone to balance with
+   * @param toneSelectSetting Setting for how to balance the tones
+   * @return A tone set to match better with toneTwo
+   */
+  private int balanceTones(int toneOne, int toneTwo, ToneSelectSetting toneSelectSetting) {
+
+    int selectedTone;
+
+    if (toneSelectSetting == ToneSelectSetting.FAVOR_HIGH) {
+      selectedTone = toneOne > toneTwo ? toneOne : toneTwo;
+    } else if (toneSelectSetting == ToneSelectSetting.FAVOR_LOW) {
+      selectedTone = toneOne < toneTwo ? toneOne : toneTwo;
+    } else {
+      selectedTone = Math.round((toneOne + toneTwo) / 2);
+    }
+
+    return selectedTone;
+
+  }
+
+  /*
+   * Balance the tone of the current phone with the phone that comes before it
+   *
+   * @param index Index of the phone to balance
+   * @param toneSelectSetting Setting for how to balance the tones
+   */
+  private void balanceBackwards(int index, ToneSelectSetting toneSelectSetting) {
+    if (index == 0) { // Don't try to balance backwards if there is nothing there
+      return;
+    }
+    int currentPhoneTone = dectalkPhones.get(index).getToneNumber();
+    int previousPhoneTone = dectalkPhones.get(index - 1).getToneNumber();
+    int balancedTone = balanceTones(currentPhoneTone, previousPhoneTone, toneSelectSetting);
+
+    dectalkPhones.get(index).setToneNumber(balancedTone);
+  }
+
+  /*
+   * Balance the tone of the current phone with the phone that comes after it
+   *
+   * @param index Index of the phone to balance
+   * @param toneSelectSetting Setting for how to balance the tones
+   */
+  private void balanceForwards(int index, ToneSelectSetting toneSelectSetting) {
+    int currentPhoneTone = dectalkPhones.get(index).getToneNumber();
+    int nextPhoneTone = dectalkPhones.get(index - 1).getToneNumber();
+    int balancedTone = balanceTones(currentPhoneTone, nextPhoneTone, toneSelectSetting);
+
+    dectalkPhones.get(index).setToneNumber(balancedTone);
+  }
+
   ///// Output /////
 
   /**
@@ -132,7 +217,7 @@ public class DECPhoneCollection {
 
     System.out.println("Writing output to file");
 
-    DECtalkFile.write("[:phoneme on]\n");
+    DECtalkFile.append("[:phoneme on]\n");
 
     DECtalkFile.append("["); // Open bracket that DECtalk needs for each line of phones
 
@@ -143,6 +228,37 @@ public class DECPhoneCollection {
     DECtalkFile.append("]\n"); // Closes the "[" from the first print statement
 
     DECtalkFile.close();
+
+  }
+
+  public void saveProgress() throws IOException {
+
+    DECtalkFile.write(currentPhoneIndex - 1); // The last phone edited (therefore approved) by user
+    DECtalkFile.write(removedPhoneCount);
+
+    writeDECtalkFile();
+
+  }
+
+  public void loadProgress() {
+
+    // Load file as string
+
+    // set currentPhoneIndex to the thing + 1
+
+    // set removedPhoneCount to the thing
+
+    // Delete all the phones 0 to currentPhoneIndex + removedPhoneCount
+
+    // Split on [, ], and >
+
+    // Iterate through stuff 0 to currentPhoneIndex - 1
+
+    // Ignore [, ], and >
+
+    // TODO make constructor for DECtalkPhone from string representing the phone
+
+    // make time frame from context of previous phone and duration
 
   }
 
