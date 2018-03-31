@@ -26,10 +26,14 @@ public class SourceAudioPlayer {
   private PrintStream out = null;
   /* Frames per millisecond of the source file */
   private long framesPerMillisecond;
+  /* Info on the source file, used to create new clips */
   private DataLine.Info info;
-  AudioFormat format;
+  /* Format of the source audio */
+  private AudioFormat format;
+  /* Bytes per second of audio */
   private long bytesPerSecond;
-  File sourceFile;
+  /* Source audio file */
+  private File sourceFile;
   /* Number of bytes to skip to get to where the data section of a wav file starts */
   private final static int WAV_HEADER_LENGTH = 44;
 
@@ -66,12 +70,12 @@ public class SourceAudioPlayer {
   }
 
   /**
-   * Plays the section of audio that a phone occurs in
+   * Creates a clip from the source audio corresponding to the phone and sets the phone's clip to it
    *
    * @param dectalkPhone DECtalkPhone to get a time frame to play
    */
-  public void playPhoneSection(DECtalkPhone dectalkPhone)
-      throws LineUnavailableException, IOException, InterruptedException {
+  public void createPhoneClip(DECtalkPhone dectalkPhone)
+      throws LineUnavailableException, IOException {
     // Gets the timeframe of the phone
     TimeFrame phoneTimeFrame = dectalkPhone.getTimeFrame();
 
@@ -87,9 +91,8 @@ public class SourceAudioPlayer {
     out.println("Playing for " + phoneTimeFrame.length() * framesPerMillisecond
         + " frames | " + phoneTimeFrame.length() + " milliseconds");
 
-    // Set the phone's clip, then play it
+    // Set the phone's clip
     dectalkPhone.setClip(phoneClip);
-    dectalkPhone.playClip();
 
     out.println();
 

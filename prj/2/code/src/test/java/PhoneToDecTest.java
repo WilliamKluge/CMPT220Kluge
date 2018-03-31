@@ -49,6 +49,9 @@ public class PhoneToDecTest {
   /* Run with user interaction */
   private static final boolean INTERACTIVE_MODE = true;
 
+  /**
+   * Tests phone recognition, pitch detection, and DECtalk conversion
+   */
   public static void main(String[] args) throws Exception {
 
     final String SOURCE_FILE = args[0];
@@ -72,7 +75,6 @@ public class PhoneToDecTest {
     ///// Setup audio playback and file handling /////
     File sourceFile = new File(SOURCE_FILE);
     InputStream stream = new FileInputStream(sourceFile);
-    SourceAudioPlayer sourceAudioPlayer = new SourceAudioPlayer(sourceFile);
 
     ///// Setup Sphinx /////
     System.out.println("Loading models...");
@@ -90,34 +92,21 @@ public class PhoneToDecTest {
     context.setSpeechSource(stream, TimeFrame.INFINITE);
     Result result;
 
-    ///// Setup file output /////
-    { // Make the directory for output if it doesn't exist
-      File directory = new File("out/DECFiles/");
-      if (!directory.exists()) {
-        directory.mkdirs();
-        // If you require it to make the entire directory path including parents,
-        // use directory.mkdirs(); here instead.
-      }
-    }
-    // Writes to dectalk file
-    String fileName = "out/DECFiles/" + new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
+    ///// Setup phone collection and file output /////
+    String outFileName = "out/DECFiles/" + new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
         + "_out.txt";
-    BufferedWriter DECtalkFile = new BufferedWriter(new FileWriter(fileName, true));
-    DECtalkFile.write("[:phoneme on]\n");
-    ArrayList<DECtalkPhone> dectalkPhones = new ArrayList<>();
+    DECPhoneCollection dectalkPhones = new DECPhoneCollection(sourceFile, outFileName);
+    PitchAnalysis pitchAnalysis = new PitchAnalysis(SOURCE_FILE);
 
     ///// Process phone recognition results /////
     while ((result = recognizer.recognize()) != null) {
-      DECtalkFile.write("["); // Open braket that DECtalk needs to be able to sing
-
       SpeechResult speechResult = new SpeechResult(result);
       System.out.format("Hypothesis: %s\n", speechResult.getHypothesis());
       System.out.println("List of recognized words and their times:");
 
-      PitchAnalysis pitchAnalysis = new PitchAnalysis(SOURCE_FILE);
-
       long lastEndTime = 0; // Time that the last word ended (for inserting pauses)
 
+      // If phrases are going to be supported, add them here
       for (WordResult r : speechResult.getWords()) {
         try {
 
@@ -127,27 +116,13 @@ public class PhoneToDecTest {
           long thisStartTime = r.getTimeFrame().getStart();
 
           if (thisStartTime > lastEndTime + PHONE_GAP_PAUSE && !DELETE_LONG_PAUSES) {
-            dectalkPhones.add(new DECtalkPhone(new TimeFrame(lastEndTime + 1, thisStartTime - 1)));
+            dectalkPhones.addPause(new TimeFrame(lastEndTime + 1, thisStartTime - 1));
           }
 
           lastEndTime = r.getTimeFrame().getEnd();
 
           ///// Pitch Analysis ///
           phone.setToneNumber(pitchAnalysis.getDECtalkToneNumber(r.getTimeFrame()));
-
-          ///// Ask user about clip /////
-          if (INTERACTIVE_MODE) {
-
-            sourceAudioPlayer.playPhoneSection(phone);
-
-            System.out.println("Did this sound like the phone " + phone.getPhone() + " (y/n)? ");
-
-            if (input.nextLine().equals("n")) {
-              System.out.print("Enter the correct phone: ");
-              phone.setPhone(input.nextLine());
-            }
-
-          }
 
           ///// Output /////
           if (BEAT_ONLY) {
@@ -160,17 +135,39 @@ public class PhoneToDecTest {
             continue;
           }
 
-          DECtalkFile.write(phone.toString());
+          dectalkPhones.addPhone(phone);
 
         } catch (IndexOutOfBoundsException e) {
           System.out.println(e.getMessage());
         }
       }
-      DECtalkFile.append("]\n"); // Closes the [ from the first print statement
     }
-    DECtalkFile.close();
-    recognizer.deallocate();
+    recognizer.deallocate(); // We're done with recognition, get rid of the recognizer
 
-  }
+    if (!INTERACTIVE_MODE) {
+      // If there should not be user interation, write the output file and end the program
+      dectalkPhones.writeDECtalkFile();
+      return;
+    }
 
-}
+    ///// Get user input about generated phones /////
+    while (dectalkPhones.currentPhoneIndex < dectalkPhones.getPhoneCount()) {
+      // While the current phone's index is less than the total number of phones
+      dectalkPhones.playCurrentPhone();
+
+      System.out.println(
+          "Did this sound like the phone " + dectalkPhones.getCurrentPhonePronunciation()
+              + " (y/n)? ");
+
+      if (input.nextLine().equals("n")) {
+        System.out.print("Enter the correct phone: ");
+        dectalkPhones.setCurrentPhonePronunciation(input.nextLine());
+      }
+
+    } // End user interaction while loop
+
+    dectalkPhones.writeDECtalkFile();
+
+  } // End method main
+
+} // End class PhoneToDecTest

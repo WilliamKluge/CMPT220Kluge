@@ -16,7 +16,7 @@ public class PhoneConversion {
    * This is in the reverse order of DECtalkPhones because here we need phone->key as opposed to
    * key->phone
    */
-  private static final Map<String, String> CMUPhones;
+  public static final Map<String, String> CMUPhones;
   static {
     CMUPhones = new HashMap<>();
     /*### These are the phones from the original script, edited to fit this format ###*/
@@ -86,7 +86,7 @@ public class PhoneConversion {
    * This is in the reverse order of CMUPhones because here we need key->phone as opposed to
    * phone->key
    */
-  private static final Map<String, String> DECtalkPhones;
+  public static final Map<String, String> DECtalkPhones;
   static {
     DECtalkPhones = new HashMap<>();
     /*### These are the phones from the original script, edited to fit this format ###*/
