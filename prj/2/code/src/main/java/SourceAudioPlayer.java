@@ -3,18 +3,15 @@ import WavFileHandling.WavFileException;
 import edu.cmu.sphinx.util.TimeFrame;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import javazoom.jlgui.basicplayer.BasicPlayerException;
 
 /**
  * Created to play back sections of the source audio file
@@ -34,7 +31,7 @@ public class SourceAudioPlayer {
   private long bytesPerSecond;
   File sourceFile;
   /* Number of bytes to skip to get to where the data section of a wav file starts */
-  private final static int DATA_SECTION_START = 44;
+  private final static int WAV_HEADER_LENGTH = 44;
 
   /**
    * Constructor.
@@ -75,36 +72,45 @@ public class SourceAudioPlayer {
    */
   public void playPhoneSection(DECtalkPhone dectalkPhone)
       throws LineUnavailableException, IOException {
-
+    // Gets the timeframe of the phone
     TimeFrame phoneTimeFrame = dectalkPhone.getTimeFrame();
+
+    // Prepares the clip to be played
+    Clip phoneClip = (Clip) AudioSystem.getLine(info); // New clip
+    FileInputStream fileInputStream = new FileInputStream(sourceFile);
+    fileInputStream.skip(WAV_HEADER_LENGTH); // Skip header
+    fileInputStream.skip(millisToBytes(phoneTimeFrame.getStart())); // Skip previous data
+    byte[] clipBytes = new byte[(int) millisToBytes(phoneTimeFrame.length())];
+    fileInputStream.read(clipBytes); // Read clipBytes.length bytes of data into array
+    phoneClip.open(format, clipBytes, 0, clipBytes.length); // Open the array as audio
+
+    out.println("Playing for " + phoneTimeFrame.length() * framesPerMillisecond
+        + " frames | " + phoneTimeFrame.length() + " milliseconds");
+
+    // Set the phone's clip, then play it
+    dectalkPhone.setClip(phoneClip);
+    dectalkPhone.playClip();
+
+    out.println();
+
+  }
+
+  /*
+   * Prints the info of what frame's of the source file's audio are being taken to play
+   *
+   * @param phoneTimeFrame Time frame of the phone being played
+   */
+  private void printFrameSeekInfo(TimeFrame phoneTimeFrame) {
 
     int seekTo = (int) (framesPerMillisecond * phoneTimeFrame.getStart());
     int endFrame = (int) (framesPerMillisecond * phoneTimeFrame.getEnd());
 
     out.println("Seeking to " + seekTo + " frame | " + phoneTimeFrame.getStart() + " milliseconds");
     out.println("End is " + endFrame + " frame | " + phoneTimeFrame.getEnd() + " milliseconds");
-    // TODO finish converting this
-    Clip phoneClip = (Clip) AudioSystem.getLine(info);
-    FileInputStream fileInputStream = new FileInputStream(sourceFile);
-    fileInputStream.skip(DATA_SECTION_START); // TODO move fileInputStream to constructor
-    fileInputStream.skip(millisToBytes(dectalkPhone.getTimeFrame().getStart()));
-    byte[] clipBytes = new byte[(int) millisToBytes(phoneTimeFrame.length())];
-    fileInputStream.read(clipBytes); // This assumes clips are being read sequentially, need to tweek
-    phoneClip.open(format, clipBytes, 0, clipBytes.length);
-
-    out.println("Clip opened");
-
-    out.println("Playing for " + dectalkPhone.getTimeFrame().length() * framesPerMillisecond
-        + " frames | " + dectalkPhone.getTimeFrame().length() + " milliseconds");
-
-    phoneClip.loop(1);
-    phoneClip.stop();
-
-    out.println();
 
   }
 
-  /**
+  /*
    * Converts a time in milliseconds into bytes using the calculated bytes per second of audio for
    * the source audio file
    *

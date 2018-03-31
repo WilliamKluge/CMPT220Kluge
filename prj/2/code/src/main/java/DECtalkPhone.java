@@ -1,5 +1,6 @@
 import edu.cmu.sphinx.util.TimeFrame;
 import java.sql.Time;
+import javax.sound.sampled.Clip;
 
 /**
  * Holds information about a DECtalk style phone
@@ -12,6 +13,8 @@ public class DECtalkPhone {
   private int toneNumber;
   /* Time frame the phone took place in */
   private TimeFrame timeFrame;
+  /* Audio clip of this phone */
+  private Clip clip;
 
   /**
    * Creates an instance of DECtalkPhone using the information from phone recognition
@@ -26,6 +29,7 @@ public class DECtalkPhone {
 
   /**
    * Creates an instance of DECtalkPhone with only a time frame, sets the phone to be silence
+   *
    * @param timeFrame Time frame the phone takes place in
    */
   public DECtalkPhone(TimeFrame timeFrame) {
@@ -35,6 +39,7 @@ public class DECtalkPhone {
 
   /**
    * Pushes the end of this object's time frame to the end of a specified time frame
+   *
    * @param timeFrame Time frame to extend to
    */
   public void extendTimeframeTo(TimeFrame timeFrame) {
@@ -43,10 +48,21 @@ public class DECtalkPhone {
 
   /**
    * Sets this phone's tone number to be equal to another phones tone number
+   *
    * @param dectalkPhone DECtalkPhone to match the tone number of
    */
   public void matchTone(DECtalkPhone dectalkPhone) {
     this.toneNumber = dectalkPhone.toneNumber;
+  }
+
+  /**
+   * Plays the phone's source audio once
+   */
+  public void playClip() {
+
+    clip.loop(1);
+    clip.stop();
+
   }
 
   /**
@@ -104,4 +120,10 @@ public class DECtalkPhone {
     return timeFrame;
   }
 
+  /**
+   * @param clip Clip of source audio that this phone represents
+   */
+  public void setClip(Clip clip) {
+    this.clip = clip;
+  }
 }
