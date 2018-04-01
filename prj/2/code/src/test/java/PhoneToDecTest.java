@@ -141,7 +141,7 @@ public class PhoneToDecTest {
 
       System.out.println(
           "Did this sound like the phone " + dectalkPhones.getCurrentPhonePronunciation()
-              + " (y/n)? ");
+              + " (y/n)? or enter a command ");
 
       String command = input.nextLine();
 
@@ -156,6 +156,9 @@ public class PhoneToDecTest {
             break commandInput;
           case "pa": // "pa" (play again) play the phone again
             dectalkPhones.playCurrentPhone();
+            System.out.println(
+                "Did this sound like the phone " + dectalkPhones.getCurrentPhonePronunciation()
+                    + " (y/n)? or enter a command ");
             break;
           case "pn": // "pn" (play next) play the next phone in the collection
             dectalkPhones.playNextPhone();
@@ -194,7 +197,7 @@ public class PhoneToDecTest {
             int gotoPhone = input.nextInt();
             dectalkPhones.setCurrentPhoneIndex(gotoPhone);
             input.nextLine(); // Eat EOL from nextInt()
-            break commandInput;
+            break;
           case "w": // "w" (write) write the output file, but continue editing
             dectalkPhones.clearOutputFile();
             dectalkPhones.writeDECtalkFile();
@@ -203,26 +206,30 @@ public class PhoneToDecTest {
             dectalkPhones.clearOutputFile();
             dectalkPhones.writeDECtalkFile();
             break userInteraction;
+          case "q!": // "q!" (hard quit) quit without saving (contents of buffer still written)
+            break userInteraction;
           case "save": // "save" save the current progress to the output file
+            System.out.println("Saving progress to output file.");
             dectalkPhones.clearOutputFile();
             dectalkPhones.saveProgress();
+            System.out.println("Finished saving.");
             break;
           case "load": // "load" load a save file from a previous session
             System.out.print("Enter the path of the file to load: ");
             dectalkPhones.loadProgress(input.nextLine());
+            System.out.println("Finished loading.");
             break;
           default:
             System.out.println("Command not recognized, try again");
             break;
         }
+        System.out.print("Enter a command: ");
         command = input.nextLine();
       }
 
       dectalkPhones.goToNextPhone();
 
     } // End user interaction while loop
-
-    dectalkPhones.writeDECtalkFile();
 
     dectalkPhones.closeOutput();
 

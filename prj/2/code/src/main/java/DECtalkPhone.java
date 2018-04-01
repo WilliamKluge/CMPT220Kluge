@@ -42,14 +42,13 @@ public class DECtalkPhone {
    * Creates a DECtalkPhone from information used when reading a save file
    *
    * @param syntax DECtalk syntax associated with this phone
-   * @param passedTimeMillis The total time passed before this phone started in milliseconds
    */
-  public DECtalkPhone(String syntax, long passedTimeMillis) {
+  public DECtalkPhone(String syntax) {
     String[] syntaxPieces = syntax.split("[<,]"); // Split on < or , (remaining pieces after split)
-    phone = syntaxPieces[0];
-    timeFrame = new TimeFrame(passedTimeMillis,
-        passedTimeMillis + Integer.parseInt(syntaxPieces[1]));
-    toneNumber = Integer.parseInt(syntaxPieces[2]);
+    // Because of this we get to ignore the duration (syntaxPieces[3]), can be removed from saves
+    timeFrame = new TimeFrame(Long.parseLong(syntaxPieces[0]), Long.parseLong(syntaxPieces[1]));
+    phone = syntaxPieces[2];
+    toneNumber = Integer.parseInt(syntaxPieces[4]);
   }
 
   /**
@@ -118,6 +117,13 @@ public class DECtalkPhone {
     DECformat.append(">");
 
     return DECformat.toString();
+  }
+
+  /**
+   * @return String representing the state of the phone including its start and end times
+   */
+  public String saveState() {
+    return timeFrame.getStart() + "," + timeFrame.getEnd() + "," + toString();
   }
 
   /**

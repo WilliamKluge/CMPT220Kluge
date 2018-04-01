@@ -41,6 +41,10 @@ public class DECPhoneCollection {
   private int currentPhoneIndex;
   /* Number of phones that have been removed from the collection (for saving progress) */
   private int removedPhoneCount;
+  /* Index of the furthest phone edited by the user. Needed for file loading because
+  currentPhoneIndex could be set further than where the user actually edited. This is not affected
+   by tone numbers, only the phone itself. */
+  private int lastEditedPhone;
   /* Array of phones that take place in the source audio in sequential order */
   private ArrayList<DECtalkPhone> dectalkPhones;
   /* BufferedWriter to handle output of DECtalk file */
@@ -60,6 +64,7 @@ public class DECPhoneCollection {
     dectalkPhones = new ArrayList<>();
     currentPhoneIndex = 0;
     removedPhoneCount = 0;
+    lastEditedPhone = 0;
     defaultToneSelectSetting = ToneSelectSetting.AVERAGE;
 
     sourceAudioPlayer = new SourceAudioPlayer(sourceFile);
@@ -100,6 +105,7 @@ public class DECPhoneCollection {
       throw new IllegalArgumentException("The given phone is not recognized by DECtalk");
     }
     dectalkPhones.get(currentPhoneIndex).setPhone(pronunciation);
+    checkLastEditedPhone(currentPhoneIndex);
   }
 
   /**
@@ -108,6 +114,7 @@ public class DECPhoneCollection {
   public void removeCurrentPhone() {
     dectalkPhones.remove(currentPhoneIndex);
     --currentPhoneIndex;
+    checkLastEditedPhone(currentPhoneIndex);
   }
 
   ///// Surrounding phone methods: Handle the with current phone and phones around it /////
@@ -235,6 +242,16 @@ public class DECPhoneCollection {
    * @throws IOException If the output file cannot properly be accessed
    */
   public void writeDECtalkFile() throws IOException {
+    writeDECtalkFile(false);
+  }
+
+  /*
+   * Writes all the DECtalk information to the specified output file
+   *
+   * @param saveState If the state of the phone should also be written for loading later
+   * @throws IOException If the output file cannot properly be accessed
+   */
+  private void writeDECtalkFile(boolean saveState) throws IOException {
 
     System.out.println("Writing output to file");
 
@@ -243,7 +260,7 @@ public class DECPhoneCollection {
     DECtalkFile.append("["); // Open bracket that DECtalk needs for each line of phones
 
     for (DECtalkPhone phone : dectalkPhones) {
-      DECtalkFile.append(phone.toString());
+      DECtalkFile.append(saveState ? phone.saveState() : phone.toString());
     }
 
     DECtalkFile.append("]\n"); // Closes the "[" from the first print statement
@@ -256,11 +273,11 @@ public class DECPhoneCollection {
    * @throws IOException If the file can not be written
    */
   public void saveProgress() throws IOException {
+    // The last phone edited (therefore approved) by user
+    DECtalkFile.append(String.valueOf(lastEditedPhone)).append("\n");
+    DECtalkFile.append(String.valueOf(removedPhoneCount)).append("\n");
 
-    DECtalkFile.write(currentPhoneIndex - 1); // The last phone edited (therefore approved) by user
-    DECtalkFile.write(removedPhoneCount);
-
-    writeDECtalkFile();
+    writeDECtalkFile(true);
 
   }
 
@@ -274,16 +291,15 @@ public class DECPhoneCollection {
     try {
       BufferedReader br = new BufferedReader(new FileReader(saveFilePath));
 
-      // set currentPhoneIndex to the thing
-      currentPhoneIndex = Integer.parseInt(br.readLine());
+      lastEditedPhone = Integer.parseInt(br.readLine());
+      currentPhoneIndex = lastEditedPhone;
 
-      // set removedPhoneCount to the thing
       removedPhoneCount = Integer.parseInt(br.readLine());
+      // Time passed before the current phone (the start is the same no matter what the user did)
+      long passedTimeMillis = dectalkPhones.get(0).getTimeFrame().getStart();
+      // Delete all phones
+      dectalkPhones.clear();
 
-      // Delete all the phones 0 to currentPhoneIndex + removedPhoneCount
-      dectalkPhones.removeAll(dectalkPhones.subList(0, currentPhoneIndex + removedPhoneCount));
-
-      // Split on [, ], and >
       br.skip(14); // Skip the 13 characters of "[:phoneme on]" and the newline
 
       StringBuilder DECSyntax = new StringBuilder();
@@ -298,10 +314,10 @@ public class DECPhoneCollection {
 
       String[] splitSyntax = builtDECSyntax.split("[>]"); // Split at the end of each phone
 
-      long passedTimeMillis = 0; // Time passed before the current phone
       for (String preparedSyntax : splitSyntax) {
-        DECtalkPhone builtPhone = new DECtalkPhone(preparedSyntax, passedTimeMillis);
-        dectalkPhones.add(0, builtPhone); // Add the new phone to the beginning
+        DECtalkPhone builtPhone = new DECtalkPhone(preparedSyntax);
+        addPhone(builtPhone, dectalkPhones.size()); // Add the new phone to the beginning
+        // Passed time = length of phone + 10ms separator that CMU puts between phones
         passedTimeMillis += builtPhone.getTimeFrame().length();
       }
 
@@ -346,16 +362,7 @@ public class DECPhoneCollection {
    * @param dectalkPhone Phone to add
    */
   public void addPhone(DECtalkPhone dectalkPhone) {
-    try {
-      sourceAudioPlayer.createPhoneClip(dectalkPhone);
-    } catch (LineUnavailableException e) {
-      System.err.println("An exception occurred when trying to use the source audio line.");
-      e.printStackTrace();
-    } catch (IOException e) {
-      System.err.println("An exception occurred when reading the source audio file");
-      e.printStackTrace();
-    }
-    dectalkPhones.add(dectalkPhone);
+    addPhone(dectalkPhone, dectalkPhones.size());
   }
 
   /**
@@ -404,5 +411,32 @@ public class DECPhoneCollection {
    */
   public void restart() {
     currentPhoneIndex = 0;
+  }
+
+  /*
+   * Creates an audio clip for a phone then adds it to the end of this collection.
+   *
+   * @param dectalkPhone Phone to add
+   */
+  private void addPhone(DECtalkPhone dectalkPhone, int position) {
+    try {
+      sourceAudioPlayer.createPhoneClip(dectalkPhone);
+    } catch (LineUnavailableException e) {
+      System.err.println("An exception occurred when trying to use the source audio line.");
+      e.printStackTrace();
+    } catch (IOException e) {
+      System.err.println("An exception occurred when reading the source audio file");
+      e.printStackTrace();
+    }
+    dectalkPhones.add(position, dectalkPhone);
+  }
+
+  /**
+   * Ensures that lastEditedPhone stays set to the furthest edit made by the user.
+   *
+   * @param currentEditIndex Index of the phone that was just edited
+   */
+  private void checkLastEditedPhone(int currentEditIndex) {
+    lastEditedPhone = lastEditedPhone > currentEditIndex ? lastEditedPhone : currentEditIndex;
   }
 }
