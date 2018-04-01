@@ -1,38 +1,20 @@
-/*
- * Copyright 2014 Carnegie Mellon University.
- * All Rights Reserved.  Use is subject to license terms.
- *
- * See the file "license.terms" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL
- * WARRANTIES.
- */
-
 import edu.cmu.sphinx.api.Configuration;
 import edu.cmu.sphinx.api.Context;
 import edu.cmu.sphinx.api.SpeechResult;
-import edu.cmu.sphinx.linguist.dictionary.Pronunciation;
 import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.result.Result;
 import edu.cmu.sphinx.result.WordResult;
 import edu.cmu.sphinx.util.TimeFrame;
-import java.applet.AudioClip;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
-import sun.audio.AudioData;
-import sun.audio.AudioDataStream;
-import sun.audio.AudioPlayer;
 
 /**
  * A simple example that shows how to transcribe a continuous audio file that has multiple
@@ -145,12 +127,13 @@ public class PhoneToDecTest {
     recognizer.deallocate(); // We're done with recognition, get rid of the recognizer
 
     if (!INTERACTIVE_MODE) {
-      // If there should not be user interation, write the output file and end the program
+      // If there should not be user interaction, write the output file and end the program
       dectalkPhones.writeDECtalkFile();
       return;
     }
 
     ///// Get user input about generated phones /////
+    System.out.println("Starting user interaction");
     userInteraction:
     while (dectalkPhones.getCurrentPhoneIndex() < dectalkPhones.getPhoneCount()) {
       // While the current phone's index is less than the total number of phones
@@ -188,6 +171,14 @@ public class PhoneToDecTest {
           case "bal": // "bal" (balance) balance tones numbers for less jarring jumps in pitch
             dectalkPhones.balanceToneNumbers();
             break;
+          case "rt": // "rt" (replace tone) replace all occurrences of a tone with a new one
+            System.out.println("Enter two numbers. First is tone to replace, "
+                + "second is tone to replace with");
+            int oldTone = input.nextInt();
+            int newTone = input.nextInt();
+            dectalkPhones.fullReplaceTone(oldTone, newTone);
+            input.nextLine(); // Sloppy way of dealing with nextInt not taking EOL
+            break;
           case "del": // "del" (delete) delete the current phone
             dectalkPhones.removeCurrentPhone();
             break commandInput;
@@ -195,14 +186,31 @@ public class PhoneToDecTest {
             // previous phone's time frame
             dectalkPhones.squishWithPrevious();
             break commandInput;
-          case "restart" : // "restart" start again from the beginning
+          case "restart": // "restart" start again from the beginning
             dectalkPhones.restart();
             break commandInput;
+          case "goto": // "goto" move currentPhoneIndex to a new value
+            System.out.println("Enter a new index to go to");
+            int gotoPhone = input.nextInt();
+            dectalkPhones.setCurrentPhoneIndex(gotoPhone);
+            input.nextLine(); // Eat EOL from nextInt()
+            break commandInput;
           case "w": // "w" (write) write the output file, but continue editing
+            dectalkPhones.clearOutputFile();
             dectalkPhones.writeDECtalkFile();
             break;
           case "wq":  // "wq" (write quit) Be done editing phones
+            dectalkPhones.clearOutputFile();
+            dectalkPhones.writeDECtalkFile();
             break userInteraction;
+          case "save": // "save" save the current progress to the output file
+            dectalkPhones.clearOutputFile();
+            dectalkPhones.saveProgress();
+            break;
+          case "load": // "load" load a save file from a previous session
+            System.out.print("Enter the path of the file to load: ");
+            dectalkPhones.loadProgress(input.nextLine());
+            break;
           default:
             System.out.println("Command not recognized, try again");
             break;
@@ -215,6 +223,8 @@ public class PhoneToDecTest {
     } // End user interaction while loop
 
     dectalkPhones.writeDECtalkFile();
+
+    dectalkPhones.closeOutput();
 
   } // End method main
 

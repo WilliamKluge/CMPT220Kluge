@@ -39,6 +39,20 @@ public class DECtalkPhone {
   }
 
   /**
+   * Creates a DECtalkPhone from information used when reading a save file
+   *
+   * @param syntax DECtalk syntax associated with this phone
+   * @param passedTimeMillis The total time passed before this phone started in milliseconds
+   */
+  public DECtalkPhone(String syntax, long passedTimeMillis) {
+    String[] syntaxPieces = syntax.split("[<,]"); // Split on < or , (remaining pieces after split)
+    phone = syntaxPieces[0];
+    timeFrame = new TimeFrame(passedTimeMillis,
+        passedTimeMillis + Integer.parseInt(syntaxPieces[1]));
+    toneNumber = Integer.parseInt(syntaxPieces[2]);
+  }
+
+  /**
    * Pushes the end of this object's time frame to the end of a specified time frame
    *
    * @param timeFrame Time frame to extend to
@@ -50,6 +64,7 @@ public class DECtalkPhone {
   /**
    * Extends this phone's time frame to the time frame of the given phone. The max of the time
    * frames is what will be selected as the new time frame.
+   *
    * @param phone Phone to absorb the time frame of
    */
   public void absorbPhone(DECtalkPhone phone) {

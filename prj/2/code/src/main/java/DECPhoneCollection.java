@@ -1,6 +1,9 @@
 import edu.cmu.sphinx.util.TimeFrame;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,6 +47,8 @@ public class DECPhoneCollection {
   private BufferedWriter DECtalkFile;
   /* Handles playback of source audio */
   private SourceAudioPlayer sourceAudioPlayer;
+  /* Name of the file to output to */
+  private String outputFileName;
 
   /**
    * Constructor for DECPhoneCollection
@@ -58,6 +63,8 @@ public class DECPhoneCollection {
     defaultToneSelectSetting = ToneSelectSetting.AVERAGE;
 
     sourceAudioPlayer = new SourceAudioPlayer(sourceFile);
+
+    this.outputFileName = outputFileName;
 
     { // Make sure the directory for output if it doesn't exist
       File directory = new File("out/DECFiles/");
@@ -125,7 +132,7 @@ public class DECPhoneCollection {
     int frontCount = currentPhoneIndex + forwardsCount;
 
     for (DECtalkPhone phone : dectalkPhones.subList(backCount < 0 ? 0 : backCount,
-        frontCount > dectalkPhones.size() -1 ? dectalkPhones.size() -1 : frontCount)) {
+        frontCount > dectalkPhones.size() - 1 ? dectalkPhones.size() - 1 : frontCount)) {
       phone.playClip();
     }
   }
@@ -136,6 +143,20 @@ public class DECPhoneCollection {
   public void squishWithPrevious() {
     dectalkPhones.get(currentPhoneIndex - 1).absorbPhone(dectalkPhones.get(currentPhoneIndex));
     removeCurrentPhone();
+  }
+
+  /**
+   * Replace over occurrence of a tone with a new tone
+   *
+   * @param oldTone Tone to replace
+   * @param newTone Tone to replace with
+   */
+  public void fullReplaceTone(int oldTone, int newTone) {
+    for (DECtalkPhone phone : dectalkPhones) {
+      if (phone.getToneNumber() == oldTone) {
+        phone.setToneNumber(newTone);
+      }
+    }
   }
 
   /**
@@ -227,10 +248,13 @@ public class DECPhoneCollection {
 
     DECtalkFile.append("]\n"); // Closes the "[" from the first print statement
 
-    DECtalkFile.close();
-
   }
 
+  /**
+   * Save the editing progress to a file to be continued later
+   *
+   * @throws IOException If the file can not be written
+   */
   public void saveProgress() throws IOException {
 
     DECtalkFile.write(currentPhoneIndex - 1); // The last phone edited (therefore approved) by user
@@ -240,26 +264,78 @@ public class DECPhoneCollection {
 
   }
 
-  public void loadProgress() {
+  /**
+   * Load the progress of a previous editing session
+   *
+   * @param saveFilePath Path to the save file to load
+   */
+  public void loadProgress(String saveFilePath) {
 
-    // Load file as string
+    try {
+      BufferedReader br = new BufferedReader(new FileReader(saveFilePath));
 
-    // set currentPhoneIndex to the thing + 1
+      // set currentPhoneIndex to the thing
+      currentPhoneIndex = Integer.parseInt(br.readLine());
 
-    // set removedPhoneCount to the thing
+      // set removedPhoneCount to the thing
+      removedPhoneCount = Integer.parseInt(br.readLine());
 
-    // Delete all the phones 0 to currentPhoneIndex + removedPhoneCount
+      // Delete all the phones 0 to currentPhoneIndex + removedPhoneCount
+      dectalkPhones.removeAll(dectalkPhones.subList(0, currentPhoneIndex + removedPhoneCount));
 
-    // Split on [, ], and >
+      // Split on [, ], and >
+      br.skip(14); // Skip the 13 characters of "[:phoneme on]" and the newline
 
-    // Iterate through stuff 0 to currentPhoneIndex - 1
+      StringBuilder DECSyntax = new StringBuilder();
+      String line;
+      while ((line = br.readLine()) != null) {
+        DECSyntax.append(line);
+      }
 
-    // Ignore [, ], and >
+      String builtDECSyntax = DECSyntax.toString();
+      builtDECSyntax = builtDECSyntax.replace("[", ""); // Remove non-phone syntax characters
+      builtDECSyntax = builtDECSyntax.replace("]", "");
 
-    // TODO make constructor for DECtalkPhone from string representing the phone
+      String[] splitSyntax = builtDECSyntax.split("[>]"); // Split at the end of each phone
 
-    // make time frame from context of previous phone and duration
+      long passedTimeMillis = 0; // Time passed before the current phone
+      for (String preparedSyntax : splitSyntax) {
+        DECtalkPhone builtPhone = new DECtalkPhone(preparedSyntax, passedTimeMillis);
+        dectalkPhones.add(0, builtPhone); // Add the new phone to the beginning
+        passedTimeMillis += builtPhone.getTimeFrame().length();
+      }
 
+    } catch (FileNotFoundException e) {
+      System.err.println("The specified save file could not be found");
+      e.printStackTrace();
+    } catch (IOException e) {
+      System.err.println("An error occurred while reading the save file");
+      e.printStackTrace();
+    }
+
+  }
+
+  /**
+   * Recreates the output file so there is no content in it.
+   */
+  public void clearOutputFile() {
+    try {
+      DECtalkFile.close();
+      DECtalkFile = new BufferedWriter(new FileWriter(outputFileName, true));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Closes file output
+   */
+  public void closeOutput() {
+    try {
+      DECtalkFile.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   ///// ArrayList operations: Handle adding, removing, or combining parts of the collection /////
@@ -303,6 +379,17 @@ public class DECPhoneCollection {
    */
   public int getCurrentPhoneIndex() {
     return currentPhoneIndex;
+  }
+
+  /**
+   * @param currentPhoneIndex Index to set the current tone to
+   * @throws IllegalArgumentException If the given currentPhoneIndex does not exist in the array
+   */
+  public void setCurrentPhoneIndex(int currentPhoneIndex) throws IllegalArgumentException {
+    if (currentPhoneIndex >= dectalkPhones.size() || currentPhoneIndex < 0) {
+      throw new IllegalArgumentException("Specified index is not in the array");
+    }
+    this.currentPhoneIndex = currentPhoneIndex;
   }
 
   /**
