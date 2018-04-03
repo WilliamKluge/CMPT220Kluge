@@ -295,8 +295,6 @@ public class DECPhoneCollection {
       currentPhoneIndex = lastEditedPhone;
 
       removedPhoneCount = Integer.parseInt(br.readLine());
-      // Time passed before the current phone (the start is the same no matter what the user did)
-      long passedTimeMillis = dectalkPhones.get(0).getTimeFrame().getStart();
       // Delete all phones
       dectalkPhones.clear();
 
@@ -317,8 +315,6 @@ public class DECPhoneCollection {
       for (String preparedSyntax : splitSyntax) {
         DECtalkPhone builtPhone = new DECtalkPhone(preparedSyntax);
         addPhone(builtPhone, dectalkPhones.size()); // Add the new phone to the beginning
-        // Passed time = length of phone + 10ms separator that CMU puts between phones
-        passedTimeMillis += builtPhone.getTimeFrame().length();
       }
 
     } catch (FileNotFoundException e) {
@@ -338,6 +334,17 @@ public class DECPhoneCollection {
     try {
       DECtalkFile.close();
       DECtalkFile = new BufferedWriter(new FileWriter(outputFileName, true));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Flushes the output to the file
+   */
+  public void flushOutput() {
+    try {
+      DECtalkFile.flush();
     } catch (IOException e) {
       e.printStackTrace();
     }

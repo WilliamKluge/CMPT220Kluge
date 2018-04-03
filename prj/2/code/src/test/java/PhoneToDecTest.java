@@ -219,6 +219,9 @@ public class PhoneToDecTest {
             dectalkPhones.loadProgress(input.nextLine());
             System.out.println("Finished loading.");
             break;
+          case "flush": // "flush" flush output to file
+            dectalkPhones.flushOutput();
+            break;
           default:
             System.out.println("Command not recognized, try again");
             break;

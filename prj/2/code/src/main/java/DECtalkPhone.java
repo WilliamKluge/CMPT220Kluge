@@ -48,7 +48,8 @@ public class DECtalkPhone {
     // Because of this we get to ignore the duration (syntaxPieces[3]), can be removed from saves
     timeFrame = new TimeFrame(Long.parseLong(syntaxPieces[0]), Long.parseLong(syntaxPieces[1]));
     phone = syntaxPieces[2];
-    toneNumber = Integer.parseInt(syntaxPieces[4]);
+    // Just take the end (in case it is a pause)
+    toneNumber = Integer.parseInt(syntaxPieces[syntaxPieces.length - 1]);
   }
 
   /**
