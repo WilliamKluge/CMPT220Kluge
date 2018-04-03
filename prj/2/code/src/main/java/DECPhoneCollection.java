@@ -24,6 +24,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * TODO improve information when playing phones and surrounding phones
  * TODO indicate if there should be a slide or higher/lower pitch to surrounding phones, then move
  * tone numbers to fit the model layed out by the user
+ * TODO play parts of the original song, not just phone parts
  */
 public class DECPhoneCollection {
 
@@ -95,7 +96,7 @@ public class DECPhoneCollection {
    * Plays the audio corresponding to the current phone
    */
   public void playCurrentPhone() {
-    dectalkPhones.get(currentPhoneIndex).playClip();
+    playPhone(currentPhoneIndex);
   }
 
   /**
@@ -132,7 +133,7 @@ public class DECPhoneCollection {
    * Plays the audio clip of the next phone
    */
   public void playNextPhone() {
-    dectalkPhones.get(currentPhoneIndex + 1).playClip();
+    playPhone(currentPhoneIndex + 1);
   }
 
   /**
@@ -147,9 +148,9 @@ public class DECPhoneCollection {
     int backCount = currentPhoneIndex - reverseCount; // Makes sure index is not out of range
     int frontCount = currentPhoneIndex + forwardsCount;
 
-    for (DECtalkPhone phone : dectalkPhones.subList(backCount < 0 ? 0 : backCount,
-        frontCount > dectalkPhones.size() - 1 ? dectalkPhones.size() - 1 : frontCount)) {
-      phone.playClip();
+    for (int i = backCount < 0 ? 0 : backCount;
+        i < currentPhoneIndex + frontCount && i < dectalkPhones.size(); ++i) {
+      playPhone(i);
     }
   }
 
@@ -206,7 +207,16 @@ public class DECPhoneCollection {
     }
   }
 
-  /**
+  private void playPhone(int phoneIndex) {
+    DECtalkPhone queuedPhone = dectalkPhones.get(phoneIndex);
+
+    System.out.println("Playing phone " + phoneIndex + ". Registered as sound "
+        + queuedPhone.getPhone());
+
+    queuedPhone.playClip();
+  }
+
+  /*
    * Balances two tones based on toneSelectSetting.
    *
    * @param toneOne Tone to balance
