@@ -174,12 +174,18 @@ public class PhoneToDecTest {
           case "bal": // "bal" (balance) balance tones numbers for less jarring jumps in pitch
             dectalkPhones.balanceToneNumbers();
             break;
-          case "rt": // "rt" (replace tone) replace all occurrences of a tone with a new one
+          case "tr": // "tr" (tone replace) replace all occurrences of a tone with a new one
             System.out.println("Enter two numbers. First is tone to replace, "
                 + "second is tone to replace with");
             int oldTone = input.nextInt();
             int newTone = input.nextInt();
             dectalkPhones.fullReplaceTone(oldTone, newTone);
+            input.nextLine(); // Sloppy way of dealing with nextInt not taking EOL
+            break;
+          case "ts": // "ts" (tone shift) shift the tone a specified amount
+            System.out.print("Enter an amount to shift tones by: ");
+            int toneShift = input.nextInt();
+            dectalkPhones.fullToneShift(toneShift);
             input.nextLine(); // Sloppy way of dealing with nextInt not taking EOL
             break;
           case "del": // "del" (delete) delete the current phone

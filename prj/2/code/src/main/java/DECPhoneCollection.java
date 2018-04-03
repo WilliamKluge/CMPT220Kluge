@@ -65,7 +65,7 @@ public class DECPhoneCollection {
     currentPhoneIndex = 0;
     removedPhoneCount = 0;
     lastEditedPhone = 0;
-    defaultToneSelectSetting = ToneSelectSetting.AVERAGE;
+    defaultToneSelectSetting = ToneSelectSetting.FAVOR_HIGH;
 
     sourceAudioPlayer = new SourceAudioPlayer(sourceFile);
 
@@ -163,6 +163,24 @@ public class DECPhoneCollection {
       if (phone.getToneNumber() == oldTone) {
         phone.setToneNumber(newTone);
       }
+    }
+  }
+
+  /**
+   * Shifts the tone of all phones by shiftAmount (can be negative or positive)
+   *
+   * @param shiftAmount Amount to shift tones by in DECtalk tone number format
+   */
+  public void fullToneShift(int shiftAmount) {
+    for (DECtalkPhone phone : dectalkPhones) {
+      int currentTone = phone.getToneNumber();
+      int newTone = currentTone + shiftAmount;
+      if (newTone < 1) {
+        newTone = 1;
+      } else if (newTone > 37) {
+        newTone = 37;
+      }
+      phone.setToneNumber(newTone);
     }
   }
 
