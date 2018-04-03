@@ -22,6 +22,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  *   TODO with preview
  * TODO better file output (multiple files so no need to restart)
  * TODO improve information when playing phones and surrounding phones
+ * TODO indicate if there should be a slide or higher/lower pitch to surrounding phones, then move
+ * tone numbers to fit the model layed out by the user
  */
 public class DECPhoneCollection {
 
