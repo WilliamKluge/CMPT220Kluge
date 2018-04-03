@@ -1,9 +1,10 @@
 //package Lab109;
 
+import Lab115.Course;
 import java.util.Arrays;
 
 /**
- * Tests the Course class
+ * Tests the Lab115.Course class
  */
 public class driver_lab109 {
 
