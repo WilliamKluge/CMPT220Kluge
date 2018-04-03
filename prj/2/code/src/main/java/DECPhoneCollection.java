@@ -15,6 +15,13 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  *
  * This class is not responsible for handling user input, however it is responsible for DECtalk file
  * output.
+ *
+ * TODO insert phone command
+ * TODO split phone command
+ * TODO phone time management
+ *   TODO with preview
+ * TODO better file output (multiple files so no need to restart)
+ * TODO improve information when playing phones and surrounding phones
  */
 public class DECPhoneCollection {
 

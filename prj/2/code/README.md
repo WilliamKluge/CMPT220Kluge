@@ -11,3 +11,7 @@ standalone gradle project.
 which is included with Gradle)
 * Sphinx4 - Needed to detect phones from audio (included with Gradle)
 * BasicPlayer v3.0 - Audio file playback
+
+## How to use (TODO expand this section)
+* For help figuring out DECtalk phones see 
+https://msu.edu/course/asc/232/song_project/dectalk_pages/DECtalk_Phonemic%20Symbols_.pdf

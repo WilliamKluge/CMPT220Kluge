@@ -144,7 +144,7 @@ public class PhoneToDecTest {
               + " (y/n)? or enter a command ");
 
       String command = input.nextLine();
-
+      // TODO make command handling class
       commandInput:
       while (!command.equals("")) { // enter nothing to proceed
         switch (command) {
