@@ -1,12 +1,12 @@
 /**
- * Program to
+ * Program to show that SavingsAccount and CheckingAccount can be instantiated
  *
  * @author William Kluge Contact: klugewilliam@gmail.com
  */
 public class driver_lab113 {
 
   /**
-   * Main method for lab
+   * Main method for lab 11.3
    *
    * @param args This program does not utilize arguments
    */

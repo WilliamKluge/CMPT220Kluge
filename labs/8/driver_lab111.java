@@ -1,15 +1,14 @@
-import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
- * Program to
+ * Program to test the Triangle class
  *
  * @author William Kluge Contact: klugewilliam@gmail.com
  */
 public class driver_lab111 {
 
   /**
-   * Main method for lab
+   * Main method for lab 11.1
    *
    * @param args This program does not utilize arguments
    */
