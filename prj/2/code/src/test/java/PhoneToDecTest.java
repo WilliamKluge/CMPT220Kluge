@@ -27,7 +27,7 @@ public class PhoneToDecTest {
   /* If all phones should be replaced with "uw"(oo)s */
   private static final boolean BEAT_ONLY = false;
   /* If the program should not wait if the pause is more than 1 second */
-  private static final boolean DELETE_LONG_PAUSES = true;
+  private static final boolean DELETE_LONG_PAUSES = false;
   /* Run with user interaction */
   private static final boolean INTERACTIVE_MODE = true;
 
@@ -75,9 +75,7 @@ public class PhoneToDecTest {
     Result result;
 
     ///// Setup phone collection and file output /////
-    String outFileName = "out/DECFiles/" + new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
-        + "_out.txt";
-    DECPhoneCollection dectalkPhones = new DECPhoneCollection(sourceFile, outFileName);
+    DECPhoneCollection dectalkPhones = new DECPhoneCollection(sourceFile);
     PitchAnalysis pitchAnalysis = new PitchAnalysis(SOURCE_FILE);
 
     ///// Process phone recognition results /////
@@ -140,75 +138,20 @@ public class PhoneToDecTest {
       // While the current phone's index is less than the total number of phones
 
       commandHandler.runCommand(command);
-      System.out.print(commandHandler.getMessage() + " ");
-
       System.out.println("Enter a command"); // Enter the command for the next iteration
       command = input.nextLine();
 
-//
-//      commandInput:
 //      while (!command.equals("")) { // enter nothing to proceed
 //        switch (command) {
-//          case "y": // "y" (yes) go to next phone
-//            break commandInput;
-//          case "n": // "n" (no) correct the phone
-//            System.out.print("Enter the correct phone: ");
-//            dectalkPhones.setCurrentPhonePronunciation(input.nextLine());
-//            break commandInput;
-//          case "bal": // "bal" (balance) balance tones numbers for less jarring jumps in pitch
-//            dectalkPhones.balanceToneNumbers();
-//            break;
-//          case "tr": // "tr" (tone replace) replace all occurrences of a tone with a new one
-//            System.out.println("Enter two numbers. First is tone to replace, "
-//                + "second is tone to replace with");
-//            int oldTone = input.nextInt();
-//            int newTone = input.nextInt();
-//            dectalkPhones.fullReplaceTone(oldTone, newTone);
-//            input.nextLine(); // Sloppy way of dealing with nextInt not taking EOL
-//            break;
-//          case "ts": // "ts" (tone shift) shift the tone a specified amount
-//            System.out.print("Enter an amount to shift tones by: ");
-//            int toneShift = input.nextInt();
-//            dectalkPhones.fullToneShift(toneShift);
-//            input.nextLine(); // Sloppy way of dealing with nextInt not taking EOL
-//            break;
-//          case "del": // "del" (delete) delete the current phone
-//            dectalkPhones.removeCurrentPhone();
-//            break commandInput;
-//          case "sp": // "sp" (squish previous) squish the current phone's time frame into the
-//            // previous phone's time frame
-//            dectalkPhones.squishWithPrevious();
-//            break commandInput;
 //          case "restart": // "restart" start again from the beginning
 //            dectalkPhones.restart();
 //            break commandInput;
-//          case "goto": // "goto" move currentPhoneIndex to a new value
-//            System.out.println("Enter a new index to go to");
-//            int gotoPhone = input.nextInt();
-//            dectalkPhones.setCurrentPhoneIndex(gotoPhone);
-//            input.nextLine(); // Eat EOL from nextInt()
-//            break;
-//          case "w": // "w" (write) write the output file, but continue editing
-//            dectalkPhones.clearOutputFile();
-//            dectalkPhones.writeDECtalkFile();
-//            break;
 //          case "wq":  // "wq" (write quit) Be done editing phones
 //            dectalkPhones.clearOutputFile();
 //            dectalkPhones.writeDECtalkFile();
 //            break userInteraction;
 //          case "q!": // "q!" (hard quit) quit without saving (contents of buffer still written)
 //            break userInteraction;
-//          case "save": // "save" save the current progress to the output file
-//            System.out.println("Saving progress to output file.");
-//            dectalkPhones.clearOutputFile();
-//            dectalkPhones.saveProgress();
-//            System.out.println("Finished saving.");
-//            break;
-//          case "load": // "load" load a save file from a previous session
-//            System.out.print("Enter the path of the file to load: ");
-//            dectalkPhones.loadProgress(input.nextLine());
-//            System.out.println("Finished loading.");
-//            break;
 //          case "flush": // "flush" flush output to file
 //            dectalkPhones.flushOutput();
 //            break;

@@ -1,11 +1,7 @@
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * Responsible for interpreting strings as commands to run operations on a DECPhoneCollection.
@@ -38,7 +34,7 @@ public class CommandHandler {
   private int queueLockIndex;
   /* Commands that need to be run. (Needed for chained commands, especially after a lock) */
   private ArrayList<String> queuedCommands;
-  /* String describing how to run commands */
+  /* String describing how to run commands TODO just get this in a man page or something*/
   private final static String helpString = "How to run autoDEC commands:\n"
       + "A '-' precedes any main command AFTER the first main command. If you are not chaining "
       + "commands then just enter the characters for the command. These commands specify what "
@@ -47,10 +43,32 @@ public class CommandHandler {
       + ", put any arguments for the main command separated by spaces.\n"
       + "Commands:\n"
       + "\th - Help (shows this message)"
+      + "\tc - Correct, the last played phone matches the audio, move to next phone\n"
+      + "\ti {correct phone} - Incorrect, the last played phone does not match the audio, use"
+      + "{correct phone} instead\n"
+      + "\td - Delete the current phone\n"
+      + "\ts - Squish\n"
+      + "\tgoto #x - Go to the xth phone"
+      + "\t\tp - Previous, squish the current phone's time into the previous one\n"
+      + "\t\tn - Next, squish the next phones time into this one\n"
       + "\tp - Play\n"
       + "\t\ta - Play again\n"
       + "\t\tn - Play next\n"
-      + "\t\ts #x #y - Play surrounding x phones backwards and y phones forwards\n";
+      + "\t\ts #x #y - Play surrounding x phones backwards and y phones forwards\n"
+      + "\tf - File\n"
+      + "\t\ts - Save\n"
+      + "\t\tw - Write (DECtalk file)\n"
+      + "\t\tn {name} - New (output file) with the name {name}\n"
+      + "\t\tl {path} - Load save file at {path}\n"
+      + "\t\tc - Close output\n"
+      + "\t\tp - Print DECtalk information to file\n"
+      + "\tt - Tone\n"
+      + "\t\tb - Balance this phone's tone with it's neighbors (only changes this tone)\n"
+      + "\t\t\ta - Balance all tones with their neighbors\n"
+      + "\t\tr"
+      + "\t\t\t#x - Replace Replace this tone with x tone number\n"
+      + "\t\t\ta #x #y Replace all tone numbers x with tone number y\n"
+      + "\t\ts #x - Shift this tone by x (can be positive or negative)\n";
 
   /**
    * Creates a CommandHandler
@@ -65,6 +83,42 @@ public class CommandHandler {
 
     // Add the help command
     commands.put("h", args -> System.out.print(helpString));
+
+    // TODO make these commands impossible to run if there are not enough arguments
+
+    // Correct
+    commands.put("c", args -> {
+      message = "Phone set as correct.";
+      decPhoneCollection.goToNextPhone();
+    });
+
+    // Incorrect
+    commands.put("i", args -> {
+      decPhoneCollection.setCurrentPhonePronunciation(args[1]);
+      decPhoneCollection.goToNextPhone();
+    });
+
+    // Delete current phone
+    commands.put("d", args -> {
+      decPhoneCollection.removeCurrentPhone();
+      decPhoneCollection.goToNextPhone();
+    });
+
+    // Squish
+    commands.put("s", args -> {
+      switch (args[1]) {
+        case "p":
+          decPhoneCollection.squishWithPrevious();
+          break;
+        case "n":
+          decPhoneCollection.squishWithNext();
+          break;
+      }
+    });
+
+    // Add the goto command
+    commands
+        .put("goto", args -> decPhoneCollection.setCurrentPhoneIndex(Integer.parseInt(args[1])));
 
     // Add the play command
     commands.put("p", args -> {
@@ -81,6 +135,62 @@ public class CommandHandler {
           break;
       }
     });
+
+    // Add file operations
+    commands.put("f", args -> {
+      switch (args[1]) {
+        case "s":
+          decPhoneCollection.saveProgress();
+          break;
+        case "w":
+          decPhoneCollection.writeDECtalkFile();
+          break;
+        case "n":
+          message = "creating new output file";
+          decPhoneCollection.createNewOutputFile(args.length > 2 ? args[2] : "");
+          break;
+        case "l":
+          message = "Loading information from save file.";
+          decPhoneCollection.loadProgress(args[2]);
+          break;
+        case "c":
+          message = "Closing output file";
+          decPhoneCollection.closeOutput();
+          break;
+        case "p":
+          message = "Displaying DECtalk code.";
+          decPhoneCollection.printDECToConsole();
+          break;
+      }
+    });
+
+    // Add tone operations
+    commands.put("t", args -> {
+      switch (args[1]) {
+        case "b":
+          boolean balanceAll = false;
+          if (args.length > 2) {
+            balanceAll = args[2].equals("a");
+          }
+          decPhoneCollection.toneNumberBalance(balanceAll);
+          break;
+        case "r":
+          if (args.length > 2 && args[2].equals("a")) {
+            decPhoneCollection.toneReplace(Integer.parseInt(args[3]), Integer.parseInt(args[4]));
+          } else {
+            decPhoneCollection.toneReplace(Integer.parseInt(args[3]));
+          }
+          break;
+        case "s":
+          boolean shiftAll = false;
+          if (args.length > 2) {
+            shiftAll = args[2].equals("a");
+          }
+          decPhoneCollection.toneShift(shiftAll, Integer.parseInt(args[3]));
+          break;
+      }
+    });
+
   }
 
   /**
@@ -95,11 +205,13 @@ public class CommandHandler {
     boolean previousLockState = lockCommands;
     for (int i = queueLockIndex; i < queuedCommands.size(); ++i) {
       String[] args = queuedCommands.get(i).split("[ ]"); // Split on spaces
+      message = "";
       try {
         commands.get(args[0]).runCommand(args);
       } catch (NullPointerException e) {
-        System.out.println("Command " + args[0] + " not found. Try again.");
+        System.out.println("Command not found. Try again.");
       }
+      System.out.println(message); // Print the message of the last run command TODO add more
       queuedCommands.remove(i); // After the command is run it can be removed
       if (lockCommands != previousLockState && lockCommands) {
         // If a command locks it, stop running new commands. Other commands need to unlock it

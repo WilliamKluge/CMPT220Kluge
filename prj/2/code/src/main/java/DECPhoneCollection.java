@@ -6,7 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Scanner;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
@@ -16,15 +19,11 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * This class is not responsible for handling user input, however it is responsible for DECtalk file
  * output.
  *
- * TODO insert phone command
- * TODO split phone command
- * TODO phone time management
- *   TODO with preview
- * TODO better file output (multiple files so no need to restart)
- * TODO improve information when playing phones and surrounding phones
- * TODO indicate if there should be a slide or higher/lower pitch to surrounding phones, then move
- * tone numbers to fit the model layed out by the user
- * TODO play parts of the original song, not just phone parts
+ * TODO insert phone command TODO split phone command TODO phone time management TODO with preview
+ * TODO better file output (multiple files so no need to restart) TODO improve information when
+ * playing phones and surrounding phones TODO indicate if there should be a slide or higher/lower
+ * pitch to surrounding phones, then move tone numbers to fit the model layed out by the user TODO
+ * play parts of the original song, not just phone parts
  */
 public class DECPhoneCollection {
 
@@ -66,10 +65,8 @@ public class DECPhoneCollection {
 
   /**
    * Constructor for DECPhoneCollection
-   *
-   * @param outputFileName Name and path of the file to output DECtalk to
    */
-  public DECPhoneCollection(File sourceFile, String outputFileName)
+  public DECPhoneCollection(File sourceFile)
       throws IOException, LineUnavailableException, UnsupportedAudioFileException {
     dectalkPhones = new ArrayList<>();
     currentPhoneIndex = 0;
@@ -79,15 +76,7 @@ public class DECPhoneCollection {
 
     sourceAudioPlayer = new SourceAudioPlayer(sourceFile);
 
-    this.outputFileName = outputFileName;
-
-    { // Make sure the directory for output if it doesn't exist
-      File directory = new File("out/DECFiles/");
-      if (!directory.exists()) {
-        directory.mkdirs();
-      }
-    }
-    DECtalkFile = new BufferedWriter(new FileWriter(outputFileName, true));
+    createNewOutputFile("");
   }
 
   ///// Current phone methods: Handle with the current phone only /////
@@ -148,27 +137,32 @@ public class DECPhoneCollection {
     int backCount = currentPhoneIndex - reverseCount; // Makes sure index is not out of range
     int frontCount = currentPhoneIndex + forwardsCount;
 
-    for (int i = backCount < 0 ? 0 : backCount;
-        i < currentPhoneIndex + frontCount && i < dectalkPhones.size(); ++i) {
+    for (int i = backCount < 0 ? 0 : backCount; i < frontCount && i < dectalkPhones.size(); ++i) {
       playPhone(i);
     }
   }
 
   /**
-   * Squish Extend the previous phone's time frame with this one. The current phone is discarded.
+   * Extend the previous phone's time frame with the current phone's. The current phone is deleted.
    */
   public void squishWithPrevious() {
-    dectalkPhones.get(currentPhoneIndex - 1).absorbPhone(dectalkPhones.get(currentPhoneIndex));
-    removeCurrentPhone();
+    squishPhones(currentPhoneIndex - 1, currentPhoneIndex);
   }
 
   /**
-   * Replace over occurrence of a tone with a new tone
+   * Extend the current phone's time frame with the next phone's. The next phone is deleted.
+   */
+  public void squishWithNext() {
+    squishPhones(currentPhoneIndex, currentPhoneIndex + 1);
+  }
+
+  /**
+   * Replace every occurrence of a tone with a new tone
    *
    * @param oldTone Tone to replace
    * @param newTone Tone to replace with
    */
-  public void fullReplaceTone(int oldTone, int newTone) {
+  public void toneReplace(int oldTone, int newTone) {
     for (DECtalkPhone phone : dectalkPhones) {
       if (phone.getToneNumber() == oldTone) {
         phone.setToneNumber(newTone);
@@ -177,20 +171,28 @@ public class DECPhoneCollection {
   }
 
   /**
+   * Replace the tone of the current phone with a new tone
+   *
+   * @param newTone Tone number to replace the current phone's tone with
+   */
+  public void toneReplace(int newTone) {
+    dectalkPhones.get(currentPhoneIndex).setToneNumber(newTone);
+  }
+
+  /**
    * Shifts the tone of all phones by shiftAmount (can be negative or positive)
    *
+   * @param shiftAll If all tones should be shifted or only the current one
    * @param shiftAmount Amount to shift tones by in DECtalk tone number format
    */
-  public void fullToneShift(int shiftAmount) {
-    for (DECtalkPhone phone : dectalkPhones) {
-      int currentTone = phone.getToneNumber();
-      int newTone = currentTone + shiftAmount;
-      if (newTone < 1) {
-        newTone = 1;
-      } else if (newTone > 37) {
-        newTone = 37;
+  public void toneShift(boolean shiftAll, int shiftAmount) {
+    if (shiftAll) {
+      for (DECtalkPhone phone : dectalkPhones) {
+        phone.setToneNumber(safeToneShift(phone.getToneNumber(), shiftAmount));
       }
-      phone.setToneNumber(newTone);
+    } else {
+      DECtalkPhone currentPhone = dectalkPhones.get(currentPhoneIndex);
+      currentPhone.setToneNumber(safeToneShift(currentPhone.getToneNumber(), shiftAmount));
     }
   }
 
@@ -200,13 +202,25 @@ public class DECPhoneCollection {
    *
    * TODO balance tones in a range with each other
    */
-  public void balanceToneNumbers() {
-    for (int i = 0; i < dectalkPhones.size(); ++i) {
+  public void toneNumberBalance(boolean balanceAll) {
+    if (balanceAll) {
+      // Balances all tones with their surroundings
+      for (int i = 0; i < dectalkPhones.size(); ++i) {
+        balanceBackwards(i, defaultToneSelectSetting);
+        balanceForwards(i, defaultToneSelectSetting);
+      }
+    } else {
+      // Balances only the current tone
       balanceBackwards(currentPhoneIndex, defaultToneSelectSetting);
       balanceForwards(currentPhoneIndex, defaultToneSelectSetting);
     }
   }
 
+  /*
+   * Plays the phone at a specified index
+   *
+   * @param phoneIndex Index of the phone to play
+   */
   private void playPhone(int phoneIndex) {
     DECtalkPhone queuedPhone = dectalkPhones.get(phoneIndex);
 
@@ -214,6 +228,21 @@ public class DECPhoneCollection {
         + queuedPhone.getPhone());
 
     queuedPhone.playClip();
+  }
+
+  /*
+   * Squishes the time of one phone into the time of another.
+   *
+   * Be careful with this, it still does allow for phones not next to each other to be squished.
+   * That is why this should remain private. All squishing should be done from individual methods
+   * that will protect from that happening.
+   *
+   * @param absorberIndex Index of the phone that is absorbing the time of the other
+   * @param squishedIndex Index of the phone to have its time taken and deleted
+   */
+  private void squishPhones(int absorberIndex, int squishedIndex) {
+    dectalkPhones.get(absorberIndex).absorbPhone(dectalkPhones.get(squishedIndex));
+    dectalkPhones.remove(squishedIndex);
   }
 
   /*
@@ -271,48 +300,44 @@ public class DECPhoneCollection {
     dectalkPhones.get(index).setToneNumber(balancedTone);
   }
 
+  /*
+   * Shifts a tone number while keeping it within the boundaries of DECtalk's tones
+   *
+   * @param currentTone Tone number of the phone that is getting shifted
+   * @param shiftAmount Amount to shift currentTone by
+   * @return A number >= 1 and <= 37 representing the shifted tone number
+   */
+  private int safeToneShift(int currentTone, int shiftAmount) {
+    int newTone = currentTone + shiftAmount;
+    if (newTone < 1) {
+      newTone = 1;
+    } else if (newTone > 37) {
+      newTone = 37;
+    }
+    return newTone;
+  }
+
   ///// Output /////
 
   /**
    * Writes all the DECtalk information to the specified output file
-   *
-   * @throws IOException If the output file cannot properly be accessed
    */
-  public void writeDECtalkFile() throws IOException {
+  public void writeDECtalkFile() {
     writeDECtalkFile(false);
-  }
-
-  /*
-   * Writes all the DECtalk information to the specified output file
-   *
-   * @param saveState If the state of the phone should also be written for loading later
-   * @throws IOException If the output file cannot properly be accessed
-   */
-  private void writeDECtalkFile(boolean saveState) throws IOException {
-
-    System.out.println("Writing output to file");
-
-    DECtalkFile.append("[:phoneme on]\n");
-
-    DECtalkFile.append("["); // Open bracket that DECtalk needs for each line of phones
-
-    for (DECtalkPhone phone : dectalkPhones) {
-      DECtalkFile.append(saveState ? phone.saveState() : phone.toString());
-    }
-
-    DECtalkFile.append("]\n"); // Closes the "[" from the first print statement
-
   }
 
   /**
    * Save the editing progress to a file to be continued later
-   *
-   * @throws IOException If the file can not be written
    */
-  public void saveProgress() throws IOException {
+  public void saveProgress() {
     // The last phone edited (therefore approved) by user
-    DECtalkFile.append(String.valueOf(lastEditedPhone)).append("\n");
-    DECtalkFile.append(String.valueOf(removedPhoneCount)).append("\n");
+    try {
+      DECtalkFile.append(String.valueOf(lastEditedPhone)).append("\n");
+      DECtalkFile.append(String.valueOf(removedPhoneCount)).append("\n");
+    } catch (IOException e) {
+      System.err.println("An error occurred while writing save information");
+      e.printStackTrace();
+    }
 
     writeDECtalkFile(true);
 
@@ -365,18 +390,6 @@ public class DECPhoneCollection {
   }
 
   /**
-   * Recreates the output file so there is no content in it.
-   */
-  public void clearOutputFile() {
-    try {
-      DECtalkFile.close();
-      DECtalkFile = new BufferedWriter(new FileWriter(outputFileName, true));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  /**
    * Flushes the output to the file
    */
   public void flushOutput() {
@@ -388,14 +401,86 @@ public class DECPhoneCollection {
   }
 
   /**
+   * Creates a new output file for this phone collection
+   *
+   * @param newName If this has a value, that name will be used for output, otherwise it will be
+   * automatically generated
+   */
+  public void createNewOutputFile(String newName) {
+
+    if (newName.equals("")) {
+      outputFileName = "out/DECFiles/" + new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
+          + "_out.txt";
+    } else {
+      outputFileName = newName;
+    }
+
+    { // Make sure the directory for output if it doesn't exist
+      File directory = new File("out/DECFiles/");
+      if (!directory.exists()) {
+        directory.mkdirs();
+      }
+    }
+
+    closeOutput();
+
+    try {
+      DECtalkFile = new BufferedWriter(new FileWriter(outputFileName, true));
+    } catch (IOException e) {
+      System.err.println("Unable to create output file.");
+      e.printStackTrace();
+    }
+
+  }
+
+  /**
    * Closes file output
    */
   public void closeOutput() {
     try {
-      DECtalkFile.close();
+      if (DECtalkFile != null) {
+        DECtalkFile.close();
+      }
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  /**
+   * Prints the DECtalk information to the console
+   */
+  public void printDECToConsole() {
+    for (DECtalkPhone phone : dectalkPhones) {
+      // Prints the information of every phone
+      System.out.print(phone.toString());
+    }
+    System.out.println(); // Add a blank line after printing all the phones
+  }
+
+  /*
+   * Writes all the DECtalk information to the specified output file
+   *
+   * @param saveState If the state of the phone should also be written for loading later
+   * @throws IOException If the output file cannot properly be accessed
+   */
+  private void writeDECtalkFile(boolean saveState) {
+
+    System.out.println("Writing output to file");
+    try {
+      DECtalkFile.append("[:phoneme on]\n");
+
+      DECtalkFile.append("["); // Open bracket that DECtalk needs for each line of phones
+
+      for (DECtalkPhone phone : dectalkPhones) {
+        DECtalkFile.append(saveState ? phone.saveState() : phone.toString());
+      }
+
+      DECtalkFile.append("]\n"); // Closes the "[" from the first print statement
+    } catch (IOException e) {
+      System.err.println("An error occurred while writing the DECtalk file");
+      e.printStackTrace();
+    }
+
   }
 
   ///// ArrayList operations: Handle adding, removing, or combining parts of the collection /////
@@ -448,6 +533,7 @@ public class DECPhoneCollection {
    */
   public void goToNextPhone() {
     ++currentPhoneIndex;
+    playCurrentPhone();
   }
 
   /**
