@@ -29,6 +29,17 @@ public class DECtalkPhone {
   }
 
   /**
+   * Creates an instance of DECtalkPhone using the information from phone recognition
+   *
+   * @param timeFrame Time frame the phone takes place in
+   * @param DECPhone Phone in DECtalk
+   */
+  public DECtalkPhone(TimeFrame timeFrame, String DECPhone) {
+    this.phone = DECPhone;
+    this.timeFrame = timeFrame;
+  }
+
+  /**
    * Creates an instance of DECtalkPhone with only a time frame, sets the phone to be silence
    *
    * @param timeFrame Time frame the phone takes place in
@@ -100,6 +111,11 @@ public class DECtalkPhone {
     }
     clip.stop();
 
+  }
+
+  public String generatePauseFromLast(long lastEndTime) {
+    long neededPause = timeFrame.getStart() - lastEndTime;
+    return (neededPause > 1) ? "_<" + neededPause + ">" : "";
   }
 
   /**

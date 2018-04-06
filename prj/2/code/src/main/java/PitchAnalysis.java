@@ -9,6 +9,8 @@ import edu.cmu.sphinx.util.TimeFrame;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
 import javafx.util.Pair;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -19,6 +21,35 @@ public class PitchAnalysis {
 
   private static final int BUFFER_SIZE = 2048;
   private static final int SAMPLE_RATE = 16000;
+  private static final boolean ROUND_UNDEFINED_TONES = false;
+
+  private static int[][] toneNumbersAndHz = new int[][]{
+      {1, 65}, {2, 69}, {3, 73}, {4, 77}, {5, 82}, {6, 87}, {7, 92}, {8, 98}, {9, 103},
+      {10, 110}, {11, 116}, {12, 123}, {13, 130}, {14, 138}, {15, 146}, {16, 155}, {17, 164},
+      {18, 174}, {19, 185}, {20, 196}, {21, 208}, {22, 220}, {23, 233}, {24, 247}, {25, 261},
+      {26, 277}, {27, 293}, {28, 311}, {29, 329}, {30, 348}, {31, 370}, {32, 392}, {33, 415},
+      {34, 440}, {35, 466}, {36, 494}, {37, 523}}; // TODO make into map
+
+  private static Map<Integer, Integer> pianoKeysAndToneNumber;
+  static {
+    pianoKeysAndToneNumber = new HashMap<>();
+    if (ROUND_UNDEFINED_TONES) {
+      for (int i = 22; i <= 35; ++i) { // 22 to 35 < 65 Hz
+        pianoKeysAndToneNumber.put(i, 1);
+      }
+    }
+    pianoKeysAndToneNumber.put(36, 2); // 36 = 65.406 Hz
+    pianoKeysAndToneNumber.put(37, 2); // 37 = 69.296 Hz
+    // Everything in this interval actually increments by one
+    for (int key = 38, tone = 3; key < 73; ++key, ++tone) {
+      pianoKeysAndToneNumber.put(key, tone);
+    }
+    if (ROUND_UNDEFINED_TONES) {
+      for (int i = 73; i <= 108; ++i) {
+        pianoKeysAndToneNumber.put(i, 37);
+      }
+    }
+  }
 
   /**
    * Constructs the PitchAnalysis class.
@@ -64,15 +95,11 @@ public class PitchAnalysis {
    */
   public int getDECtalkToneNumber(TimeFrame timeFrame) {
     // Associates a DECtalk tone key with a pitch
-    int[][] toneNumbersAndHz = new int[][]{
-        {1, 65}, {2, 69}, {3, 73}, {4, 77}, {5, 82}, {6, 87}, {7, 92}, {8, 98}, {9, 103},
-        {10, 110}, {11, 116}, {12, 123}, {13, 130}, {14, 138}, {15, 146}, {16, 155}, {17, 164},
-        {18, 174}, {19, 185}, {20, 196}, {21, 208}, {22, 220}, {23, 233}, {24, 247}, {25, 261},
-        {26, 277}, {27, 293}, {28, 311}, {29, 329}, {30, 348}, {31, 370}, {32, 392}, {33, 415},
-        {34, 440}, {35, 466}, {36, 494}, {37, 523}};
-
     float pitch = getPitchAtTime(timeFrame);
+    return pitchToToneNumber(pitch);
+  }
 
+  public static int pitchToToneNumber(float pitch) {
     int closestToneNumberIndex = 0;
     float bestToneDifference = Math.abs(toneNumbersAndHz[0][1] - pitch);
 
@@ -87,7 +114,18 @@ public class PitchAnalysis {
     }
 
     return toneNumbersAndHz[closestToneNumberIndex][0];
+  }
 
+  public static int pianoKeyToToneNumber(int key) {
+    if (pianoKeysAndToneNumber.containsKey(key)) {
+      return pianoKeysAndToneNumber.get(key);
+    } else {
+      return (int) keyToHz(key);
+    }
+  }
+
+  public static float keyToHz(int key) {
+    return (float) (2 * ((key - 49.0) / 12.0) * 440.0);
   }
 
   /**
