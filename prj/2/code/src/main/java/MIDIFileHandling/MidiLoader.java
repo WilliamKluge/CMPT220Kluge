@@ -6,6 +6,7 @@ import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
+import javax.sound.midi.spi.MidiFileReader;
 
 /**
  * Copied from https://gist.github.com/sport4minus/2971754

@@ -113,11 +113,6 @@ public class DECtalkPhone {
 
   }
 
-  public String generatePauseFromLast(long lastEndTime) {
-    long neededPause = timeFrame.getStart() - lastEndTime;
-    return (neededPause > 1) ? "_<" + neededPause + ">" : "";
-  }
-
   /**
    * @return DECtalk format of this phone
    */
@@ -134,6 +129,10 @@ public class DECtalkPhone {
     DECformat.append(">");
 
     return DECformat.toString();
+  }
+
+  public String pauseCommand() {
+    return "[:pp " + timeFrame.length() + "]";
   }
 
   /**

@@ -21,7 +21,7 @@ public class PitchAnalysis {
 
   private static final int BUFFER_SIZE = 2048;
   private static final int SAMPLE_RATE = 16000;
-  private static final boolean ROUND_UNDEFINED_TONES = false;
+  private static final boolean ROUND_UNDEFINED_TONES = true;
 
   private static int[][] toneNumbersAndHz = new int[][]{
       {1, 65}, {2, 69}, {3, 73}, {4, 77}, {5, 82}, {6, 87}, {7, 92}, {8, 98}, {9, 103},
@@ -125,7 +125,8 @@ public class PitchAnalysis {
   }
 
   public static float keyToHz(int key) {
-    return (float) (2 * ((key - 49.0) / 12.0) * 440.0);
+    float hz = (float) (2 * ((key - 49.0) / 12.0) * 440.0);
+    return hz;
   }
 
   /**
