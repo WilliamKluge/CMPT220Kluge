@@ -35,7 +35,7 @@ public class MIDIToDEC {
     MidiLoader midiLoader = new MidiLoader(args[0]);
 
     int PPQ = midiLoader.mySeq.getResolution();
-    int BPM = 120; // This can change a lot...time to calculate it!
+    int BPM = 100; // This can change a lot...time to calculate it!
     int ticksPerMinute = BPM * PPQ;
     double millisPerTick = (midiLoader.mySeq.getMicrosecondLength() / 1000.0)
         / midiLoader.mySeq.getTickLength();
@@ -156,8 +156,13 @@ public class MIDIToDEC {
         continue;
       }
       StringBuilder command = new StringBuilder("[");
-      for (int i = 0; i < decTrack.size(); ++i) { // Problem was here
-        DECtalkPhone phone = decTrack.get(i);
+      DECtalkPhone lastSoundPhone = new DECtalkPhone(new TimeFrame(0, 0));
+      for (DECtalkPhone phone : decTrack) {
+        command.append(PitchVolumeController.volumeShift(lastSoundPhone, phone));
+        if (!phone.getPhone().equals("_")) {
+          // Keep this so that it's easier to compare the sounds of phones
+          lastSoundPhone = phone;
+        }
         command.append(phone.toString());
       }
       command.append("]");
@@ -181,7 +186,6 @@ public class MIDIToDEC {
           "\"[:phoneme on]\"",
           command.toString());
       pb.directory(new File("dectalk\\"));
-      System.out.println("Command: " + pb.command());
       Process p = pb.start();
       // To capture output from the shell
 //      InputStream shellIn = p.getInputStream();
