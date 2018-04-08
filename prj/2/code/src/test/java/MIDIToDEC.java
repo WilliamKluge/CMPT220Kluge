@@ -53,7 +53,7 @@ public class MIDIToDEC {
 
       for (Note note : midiLoader.trackAsArrayList(i)) {
         DECtalkPhone phone = new DECtalkPhone(new TimeFrame((long) (note.start / ticksPerMillis),
-            (long) ((note.start + note.duration) / ticksPerMillis)), "duw");
+            (long) ((note.start + note.duration) / ticksPerMillis)), "ah");
         phone.setToneNumber(PitchAnalysis.pianoKeyToToneNumber(note.pitch));
         allPhones.add(phone);
 
@@ -111,14 +111,14 @@ public class MIDIToDEC {
     for (int i = 1; i < allPhones.size(); ++i) {
       DECtalkPhone phone = allPhones.get(i);
 
-      for (ArrayList<DECtalkPhone> track : builtTracks) {
-        DECtalkPhone lastTrackPhone = track.get(track.size() - 1);
-
-        if (phone.getTimeFrame().getStart() > lastTrackPhone.getTimeFrame().getEnd()) {
-          addWithPauses(track, phone);
-          continue phoneLoop; // Eyyyy it's good man :ok_hand:
-        }
-      }
+//      for (ArrayList<DECtalkPhone> track : builtTracks) {
+//        DECtalkPhone lastTrackPhone = track.get(track.size() - 1);
+//
+//        if (phone.getTimeFrame().getStart() > lastTrackPhone.getTimeFrame().getEnd()) {
+//          addWithPauses(track, phone);
+//          continue phoneLoop; // Eyyyy it's good man :ok_hand:
+//        }
+//      }
 
       DECtalkPhone lastBuildingTrackPhone = buildingTrack.get(buildingTrack.size() - 1);
       if (phone.getTimeFrame().getStart() > lastBuildingTrackPhone.getTimeFrame().getEnd()) {
@@ -232,7 +232,8 @@ public class MIDIToDEC {
           pauseTime -= MAX_WAIT_LENGTH;
         }
         if (pauseTime > 0) {
-          track.add(new DECtalkPhone(new TimeFrame(MAX_WAIT_LENGTH * i, MAX_WAIT_LENGTH * i)));
+          track.add(new DECtalkPhone(new TimeFrame(MAX_WAIT_LENGTH * i,
+              MAX_WAIT_LENGTH * i + pauseTime)));
         }
       }
       track.add(phone);
