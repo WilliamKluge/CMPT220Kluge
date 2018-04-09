@@ -9,7 +9,9 @@ import javax.sound.midi.Track;
 import javax.sound.midi.spi.MidiFileReader;
 
 /**
- * Copied from https://gist.github.com/sport4minus/2971754
+ * Copied from https://gist.github.com/sport4minus/2971754, modified to better fit my use case
+ *
+ * TODO clean this up. It works right now, but it's gross.
  */
 public class MidiLoader {
 
@@ -19,8 +21,8 @@ public class MidiLoader {
    */
   public ArrayList<ArrayList<Note>> tracks;
   public Sequence mySeq;
-  long maxTicks = 0;
-  final boolean DO_PRINT = false;
+  private long maxTicks = 0;
+  private final boolean DO_PRINT = false;
 
   public MidiLoader(String fileName) {
 
