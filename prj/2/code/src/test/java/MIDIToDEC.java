@@ -1,25 +1,10 @@
 import edu.cmu.sphinx.util.TimeFrame;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collections;
-import javax.sound.midi.MidiEvent;
-import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
-import javax.sound.midi.ShortMessage;
-import javax.sound.midi.Track;
 import MIDIFileHandling.*;
-import sun.security.krb5.internal.crypto.Aes128;
 
 /**
  * Shout out to my boi Sami Koivu from this SO page for the base code here:
@@ -29,6 +14,10 @@ public class MIDIToDEC {
 
   /* Maximum length of a pause before it gets broken up */
   public final static int MAX_WAIT_LENGTH = 16000;
+  /* Where base turns to treble */
+  public final static int MIDI_MIDDLE_C = 60;
+  /**/
+  private final static String[] VOICE_SETTINGS = new String[] {"[:np]", "[:nh]", "[:nf]", "[:nd]"};
 
   public static void main(String[] args) throws Exception {
     Sequence sequence = MidiSystem.getSequence(new File(args[0]));
@@ -37,45 +26,61 @@ public class MIDIToDEC {
     int PPQ = midiLoader.mySeq.getResolution();
     int BPM = 100; // This can change a lot...time to calculate it!
     int ticksPerMinute = BPM * PPQ;
-    double millisPerTick = (midiLoader.mySeq.getMicrosecondLength() / 1000.0)
-        / midiLoader.mySeq.getTickLength();
     double ticksPerMillis = ticksPerMinute * (1.0 / 60000);
 
     /* Array of phones that take place in the source audio in sequential order */
     ArrayList<ArrayList<DECtalkPhone>> dectalkPhones = new ArrayList<>();
     ArrayList<DECtalkPhone> allPhones = new ArrayList<>();
+    ArrayList<ArrayList<Note>> clefSeparation = new ArrayList<>();
 
+    int soundTrack = 0;
     for (int i = 0; i < midiLoader.tracks.size(); ++i) {
       ArrayList<DECtalkPhone> trackDECList = new ArrayList<>();
-      // Tracks for phones that TODO problem is that the pause from the last phone is not mattering
-      ArrayList<ArrayList<DECtalkPhone>> extraTracks = new ArrayList<>();
-      trackDECList.add(new DECtalkPhone(new TimeFrame(0, 0))); // Adds a blank phone
+//      trackDECList.add(new DECtalkPhone(new TimeFrame(0, 0))); // Adds a blank phone
+      ArrayList<Note> separateClefs = new ArrayList<>();
+
+      int lastNote = -1;
 
       for (Note note : midiLoader.trackAsArrayList(i)) {
-        DECtalkPhone phone = new DECtalkPhone(new TimeFrame((long) (note.start / ticksPerMillis),
-            (long) ((note.start + note.duration) / ticksPerMillis)), "ah");
-        phone.setToneNumber(PitchAnalysis.pianoKeyToToneNumber(note.pitch));
-        allPhones.add(phone);
 
-        // Add the phone to the first track with space for it
-//        boolean added = false;
-//        for (ArrayList<DECtalkPhone> track : dectalkPhones) {
-//          if (canFitInTrack(track, phone)) {
-//            addWithPauses(track, phone);
-//            added = true;
-//            break;
-//          }
-//        }
-//
-//        if (!added) {
-//          ArrayList<DECtalkPhone> newTrack = new ArrayList<>();
-//          newTrack.add(new DECtalkPhone(new TimeFrame(0, 0))); // Adds a blank phone
-//          addWithPauses(newTrack, phone);
-//          dectalkPhones.add(newTrack);
-//        }
+        if (lastNote != -1 && (lastNote < MIDI_MIDDLE_C && note.pitch >= MIDI_MIDDLE_C)
+            || (lastNote >= MIDI_MIDDLE_C && note.pitch < MIDI_MIDDLE_C)) {
+          separateClefs.add(note);
+        } else {
+          lastNote = note.pitch;
+          DECtalkPhone phone = new DECtalkPhone(new TimeFrame((long) (note.start / ticksPerMillis),
+              (long) ((note.start + note.duration) / ticksPerMillis)), "uw");
+          phone.setToneNumber(PitchAnalysis.pianoKeyToToneNumber(note.pitch));
+          phone.setTrack(soundTrack);
+          allPhones.add(phone);
+        }
+
       }
 
-      dectalkPhones.add(trackDECList);
+      if (midiLoader.trackAsArrayList(i).size() > 0) {
+        ++soundTrack;
+      }
+
+      if (separateClefs.size() > 0) {
+        clefSeparation.add(separateClefs);
+      }
+
+      if (dectalkPhones.size() > 0) {
+        dectalkPhones.add(trackDECList);
+      }
+    }
+
+    // Get the notes that were to different from other notes in allPhones as well
+    for (int i = 0; i < clefSeparation.size(); ++i) {
+
+      for (Note note : clefSeparation.get(i)) {
+        DECtalkPhone phone = new DECtalkPhone(new TimeFrame((long) (note.start / ticksPerMillis),
+            (long) ((note.start + note.duration) / ticksPerMillis)), "uw");
+        phone.setToneNumber(PitchAnalysis.pianoKeyToToneNumber(note.pitch));
+        phone.setTrack(soundTrack + i); // Sound track is the last one + whichever thing we're on
+        allPhones.add(phone);
+      }
+
     }
 
     // Remove empty phones TODO bruh get rid of these...too simple
@@ -86,19 +91,19 @@ public class MIDIToDEC {
     dectalkPhones.removeIf(ArrayList::isEmpty);
 
     // Find earliest start time TODO honestly these can all be smash together if you think about it
-    long earliestStartTime = dectalkPhones.get(0).get(0).getTimeFrame().getStart();
-    for (ArrayList<DECtalkPhone> track : dectalkPhones) {
-      long trackStart = track.get(0).getTimeFrame().getStart();
-      if (trackStart < earliestStartTime) {
-        earliestStartTime = trackStart;
-      }
-    }
+//    long earliestStartTime = dectalkPhones.get(0).get(0).getTimeFrame().getStart();
+//    for (ArrayList<DECtalkPhone> track : dectalkPhones) {
+//      long trackStart = track.get(0).getTimeFrame().getStart();
+//      if (trackStart < earliestStartTime) {
+//        earliestStartTime = trackStart;
+//      }
+//    }
 
     // Add pauses
     for (ArrayList<DECtalkPhone> track : dectalkPhones) {
       long trackStart = track.get(0).getTimeFrame().getStart();
-      if (trackStart > earliestStartTime) {
-        track.add(0, new DECtalkPhone(new TimeFrame(earliestStartTime, trackStart)));
+      if (trackStart > 0) {
+        track.add(0, new DECtalkPhone(new TimeFrame(0, trackStart)));
       }
     }
 
@@ -121,7 +126,8 @@ public class MIDIToDEC {
 //      }
 
       DECtalkPhone lastBuildingTrackPhone = buildingTrack.get(buildingTrack.size() - 1);
-      if (phone.getTimeFrame().getStart() > lastBuildingTrackPhone.getTimeFrame().getEnd()) {
+      if (phone.getTimeFrame().getStart() > lastBuildingTrackPhone.getTimeFrame().getEnd()
+          && phone.getTrack() == lastBuildingTrackPhone.getTrack()) {
         addWithPauses(buildingTrack, phone);
       } else {
         // Phone does not fit into any possible tracks
@@ -132,23 +138,6 @@ public class MIDIToDEC {
 
     }
 
-    // Print DEC syntax
-//    System.out.println("[:phoneme on]");
-//
-//    for (ArrayList<DECtalkPhone> decTrack : builtTracks) {
-//      if (decTrack.isEmpty()) {
-//        continue;
-//      }
-//      System.out.print("[");
-//      DECtalkPhone lastPhone = decTrack.get(0);
-//      for (DECtalkPhone phone : decTrack) {
-//        System.out.print(phone.generatePauseFromLast(lastPhone.getTimeFrame().getEnd()));
-//        System.out.print(phone.toString());
-//        lastPhone = phone;
-//      }
-//      System.out.println("]");
-//    }
-
     System.out.println("Generating wav files");
     int wavName = 0;
     for (ArrayList<DECtalkPhone> decTrack : builtTracks) {
@@ -157,22 +146,20 @@ public class MIDIToDEC {
       }
       StringBuilder command = new StringBuilder("[");
       DECtalkPhone lastSoundPhone = new DECtalkPhone(new TimeFrame(0, 0));
+      int track = 0;
       for (DECtalkPhone phone : decTrack) {
+        // TODO Separate notes by tone , only put highs together, lows together, user adjusts volume
+        command.append("]").append(VOICE_SETTINGS[phone.getTrack()]).append("["); // TODO dangerous
         command.append(PitchVolumeController.volumeShift(lastSoundPhone, phone));
         if (!phone.getPhone().equals("_")) {
           // Keep this so that it's easier to compare the sounds of phones
           lastSoundPhone = phone;
+          track = phone.getTrack();
         }
         command.append(phone.toString());
       }
       command.append("]");
 
-//      {
-//        File decFile = new File("dectalk/generated/" + wavName + ".txt");
-//        BufferedWriter fileWriter = new BufferedWriter(new FileWriter(decFile));
-//        fileWriter.write(command.toString());
-//        fileWriter.close();
-//      }
       File exe = new File("dectalk\\say.exe");
       if (!exe.exists()) {
         System.out.println("Exe doesn't exist");
@@ -181,23 +168,12 @@ public class MIDIToDEC {
       // -w generated\0.wav < generated\0.txt
       System.out.println(command.toString());
       ProcessBuilder pb = new ProcessBuilder("dectalk\\say.exe",
-          "-w", "generated\\" + wavName + ".wav",
+          "-w", "generated\\" + track + "t" + wavName + ".wav",
           "-pre",
           "\"[:phoneme on]\"",
           command.toString());
       pb.directory(new File("dectalk\\"));
-      Process p = pb.start();
-      // To capture output from the shell
-//      InputStream shellIn = p.getInputStream();
-//
-//      // Wait for the shell to finish and get the return code
-//      int shellExitStatus = p.waitFor();
-//      System.out.println("Exit status" + shellExitStatus);
-//
-//      String response = convertStreamToStr(shellIn);
-//      System.out.print(response);
-//
-//      shellIn.close();
+      pb.start();
 
       ++wavName; //47
     }

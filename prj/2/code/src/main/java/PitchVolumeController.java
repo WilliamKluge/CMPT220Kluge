@@ -1,5 +1,6 @@
 /**
  * Handles what the volume should be for various pitches
+ * DECtalk changes pitch based on what comes next(?)
  */
 public class PitchVolumeController {
 
@@ -8,7 +9,7 @@ public class PitchVolumeController {
   }
 
   private final static VOLUME_SETTING SETTING = VOLUME_SETTING.STATIC;
-  private final static int MAX_VOLUME_DELTA = 500;
+  private final static int MAX_VOLUME_DELTA = 1000;
   private final static int DEC_VOLUME_DELTA_LIMIT = 99;
 
   public static String volumeShift(DECtalkPhone lastPhone, DECtalkPhone currentPhone) {
@@ -29,14 +30,19 @@ public class PitchVolumeController {
         if (currentPhone.getToneNumber() != 0) {
           int desiredVolume = staticVolume(currentPhone.getToneNumber());
           shift = generateChangeCommand(MAX_VOLUME_DELTA / 2, desiredVolume); // I just made up 50
-        } else {
-          shift = "";
         }
       }
     }
 
     return shift;
 
+  }
+
+  /**
+   * Replaces the given key with a tone that fits within all possible tones
+   */
+  public int replaceToneToFit(int key) {
+    return 0;
   }
 
   private static String staticVolumeShift(DECtalkPhone lastPhone, DECtalkPhone currentPhone) {
@@ -76,8 +82,8 @@ public class PitchVolumeController {
 
     StringBuilder command = new StringBuilder();
     for (int i = volumeChangeRemaining / DEC_VOLUME_DELTA_LIMIT; i > 0;
-        --i, volumeChangeRemaining -= MAX_VOLUME_DELTA) {
-      command.append("][:volume ").append(movement).append(MAX_VOLUME_DELTA).append("][");
+        --i, volumeChangeRemaining -= DEC_VOLUME_DELTA_LIMIT) {
+      command.append("][:volume ").append(movement).append(DEC_VOLUME_DELTA_LIMIT).append("][");
     }
 
     command.append("][:volume ").append(movement).append(volumeChangeRemaining).append("][");

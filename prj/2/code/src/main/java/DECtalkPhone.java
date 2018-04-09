@@ -7,7 +7,8 @@ import javax.sound.sampled.Clip;
  * Holds information about a DECtalk style phone
  */
 public class DECtalkPhone {
-
+  /** */
+  private int track;
   /* Phone stored by this class */
   private String phone;
   /* Pitch of this phone */
@@ -16,6 +17,7 @@ public class DECtalkPhone {
   private TimeFrame timeFrame;
   /* Audio clip of this phone */
   private Clip clip;
+  private final static int MIN_LENGTH = 75;
 
   /**
    * Creates an instance of DECtalkPhone using the information from phone recognition
@@ -119,8 +121,8 @@ public class DECtalkPhone {
   @Override
   public String toString() {
     StringBuilder DECformat = new StringBuilder(phone);
-
-    DECformat.append("<").append(timeFrame.length());
+    long calculatedLength = timeFrame.length() < MIN_LENGTH ? MIN_LENGTH : timeFrame.length();
+    DECformat.append("<").append(calculatedLength);
 
     if (!phone.equals("_")) { // If the phone is not a wait (needs tone number added)
       DECformat.append(",").append(toneNumber);
@@ -184,5 +186,13 @@ public class DECtalkPhone {
    */
   public void setClip(Clip clip) {
     this.clip = clip;
+  }
+
+  public int getTrack() {
+    return track;
+  }
+
+  public void setTrack(int track) {
+    this.track = track;
   }
 }
