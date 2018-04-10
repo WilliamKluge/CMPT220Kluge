@@ -1,4 +1,6 @@
 import MIDIFileHandling.MidiLoader;
+import Notes.DECNote;
+import java.util.ArrayList;
 
 /**
  * Converts a MIDI file into a DECtalk file
@@ -12,5 +14,7 @@ public class MIDIConverter {
     midiLoader = new MidiLoader(filePath);
 
   }
+
+
 
 }

@@ -1,4 +1,5 @@
 import Notes.MIDINote;
+import SoundHandling.PitchAnalysis;
 import edu.cmu.sphinx.util.TimeFrame;
 import java.io.File;
 

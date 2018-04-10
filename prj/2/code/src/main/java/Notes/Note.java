@@ -1,12 +1,20 @@
 package Notes;
 
+import SoundHandling.PitchAnalysis;
+
 public abstract class Note {
 
+  /**
+   * Defines what unit of time a note uses
+   */
   public enum TimeUnit {
     MIDI_TICK,
     MILLISECOND
   }
 
+  /**
+   * Defines how a note handles pitch
+   */
   public enum PitchUnit {
     PIANO_KEY,
     TONE_NUMBER,
@@ -14,15 +22,17 @@ public abstract class Note {
   }
 
   /* Time the note starts */
-  private long start;
+  protected long start;
   /* Time the note ends */
-  private long end;
+  protected long end;
   /* Channel of the note */
-  private int channel;
+  protected int channel;
   /* Velocity of the note */
-  private int velocity;
+  protected int velocity;
   /* Pitch of the note in PitchUnit */
-  private int pitch;
+  protected int pitch;
+  /* The word associated with this note */
+  protected String word;
 
   /**
    * Default constructor for Note
@@ -47,6 +57,23 @@ public abstract class Note {
     this.channel = channel;
     this.velocity = velocity;
     this.pitch = pitch;
+    this.word = null;
+  }
+
+  /**
+   * Constructs the Note
+   * @param start Time the note starts at (in TimeUnit)
+   * @param end Time the note ends at (in TimeUnit)
+   * @param channel Channel of the note. This means different things for different derived classes,
+   * but this is a determining factor of which voice autoDEC assigns to the note.
+   * @param velocity Velocity of the note (basically how hard was the key smashed)
+   * @param pitch Pitch of the note. Again, this means different things for different derived
+   * classes, b
+   * @param word Word/syllable/phone of this note
+   */
+  public Note(long start, long end, int channel, int velocity, int pitch, String word) {
+    this(start, end, channel, velocity, pitch);
+    this.word = word;
   }
 
   /**
@@ -120,6 +147,28 @@ public abstract class Note {
   }
 
   /**
+   * @return This note's pitch represented by a DECtalk tone number
+   */
+  public int getToneNumber() {
+    int toneNumber;
+    switch (getPitchUnit()) {
+      case TONE_NUMBER:
+        toneNumber = pitch;
+        break;
+      case PIANO_KEY:
+        toneNumber = PitchAnalysis.pianoKeyToToneNumber(pitch);
+        break;
+      case HZ:
+        toneNumber = PitchAnalysis.pitchToToneNumber(pitch);
+        break;
+      default:
+        throw new UnsupportedOperationException("Unable to convert a notes pitch to a tone number");
+    }
+
+    return toneNumber;
+  }
+
+  /**
    * Sets the start and end time of the note. Units must match the classes TimeUnit
    * @param start Time the note starts at
    * @param end Time the note ends at
@@ -151,5 +200,15 @@ public abstract class Note {
 
   public void setPitch(int pitch) {
     this.pitch = pitch;
+  }
+
+  /**
+   * This is protected so that only children of Note that specifically deal with words will handle
+   * them.
+   *
+   * @return Word/syllable/phone associated with this note
+   */
+  protected String getWord() {
+    return word;
   }
 }
