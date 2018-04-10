@@ -1,3 +1,4 @@
+import Notes.MIDINote;
 import edu.cmu.sphinx.util.TimeFrame;
 import java.io.File;
 
@@ -31,26 +32,26 @@ public class MIDIToDEC {
     /* Array of phones that take place in the source audio in sequential order */
     ArrayList<ArrayList<DECtalkPhone>> dectalkPhones = new ArrayList<>();
     ArrayList<DECtalkPhone> allPhones = new ArrayList<>();
-    ArrayList<ArrayList<Note>> clefSeparation = new ArrayList<>();
+    ArrayList<ArrayList<MIDINote>> clefSeparation = new ArrayList<>();
 
     int soundTrack = 0;
     for (int i = 0; i < midiLoader.tracks.size(); ++i) {
       ArrayList<DECtalkPhone> trackDECList = new ArrayList<>();
 //      trackDECList.add(new DECtalkPhone(new TimeFrame(0, 0))); // Adds a blank phone
-      ArrayList<Note> separateClefs = new ArrayList<>();
+      ArrayList<MIDINote> separateClefs = new ArrayList<>();
 
       int lastNote = -1;
 
-      for (Note note : midiLoader.trackAsArrayList(i)) {
+      for (MIDINote note : midiLoader.trackAsArrayList(i)) {
 
-        if (lastNote != -1 && (lastNote < MIDI_MIDDLE_C && note.pitch >= MIDI_MIDDLE_C)
-            || (lastNote >= MIDI_MIDDLE_C && note.pitch < MIDI_MIDDLE_C)) {
+        if (lastNote != -1 && (lastNote < MIDI_MIDDLE_C && note.getPitch() >= MIDI_MIDDLE_C)
+            || (lastNote >= MIDI_MIDDLE_C && note.getPitch() < MIDI_MIDDLE_C)) {
           separateClefs.add(note);
         } else {
-          lastNote = note.pitch;
-          DECtalkPhone phone = new DECtalkPhone(new TimeFrame((long) (note.start / ticksPerMillis),
-              (long) ((note.start + note.duration) / ticksPerMillis)), "uw");
-          phone.setToneNumber(PitchAnalysis.pianoKeyToToneNumber(note.pitch));
+          lastNote = note.getPitch();
+          DECtalkPhone phone = new DECtalkPhone(new TimeFrame((long) (note.getStartAsTicks() / ticksPerMillis),
+              (long) ((note.getEndAsTicks()) / ticksPerMillis)), "uw");
+          phone.setToneNumber(PitchAnalysis.pianoKeyToToneNumber(note.getPitch()));
           phone.setTrack(soundTrack);
           allPhones.add(phone);
         }
@@ -73,10 +74,10 @@ public class MIDIToDEC {
     // Get the notes that were to different from other notes in allPhones as well
     for (int i = 0; i < clefSeparation.size(); ++i) {
 
-      for (Note note : clefSeparation.get(i)) {
-        DECtalkPhone phone = new DECtalkPhone(new TimeFrame((long) (note.start / ticksPerMillis),
-            (long) ((note.start + note.duration) / ticksPerMillis)), "uw");
-        phone.setToneNumber(PitchAnalysis.pianoKeyToToneNumber(note.pitch));
+      for (MIDINote note : clefSeparation.get(i)) {
+        DECtalkPhone phone = new DECtalkPhone(new TimeFrame((long) (note.getStartAsTicks() / ticksPerMillis),
+            (long) ((note.getEndAsTicks()) / ticksPerMillis)), "uw");
+        phone.setToneNumber(PitchAnalysis.pianoKeyToToneNumber(note.getPitch()));
         phone.setTrack(soundTrack + i); // Sound track is the last one + whichever thing we're on
         allPhones.add(phone);
       }

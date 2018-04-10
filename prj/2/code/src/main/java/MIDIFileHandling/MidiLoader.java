@@ -1,12 +1,12 @@
 package MIDIFileHandling;
 
+import Notes.MIDINote;
 import java.io.File;
 import java.util.ArrayList;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
-import javax.sound.midi.spi.MidiFileReader;
 
 /**
  * Copied from https://gist.github.com/sport4minus/2971754, modified to better fit my use case
@@ -19,7 +19,7 @@ public class MidiLoader {
    * loads a midi file from disk and stores all notes in a nested Array List, using the Helper class
    * "Note" needs some cleanup though
    */
-  public ArrayList<ArrayList<Note>> tracks;
+  public ArrayList<ArrayList<MIDINote>> tracks;
   public Sequence mySeq;
   private long maxTicks = 0;
   private final boolean DO_PRINT = false;
@@ -27,7 +27,7 @@ public class MidiLoader {
   public MidiLoader(String fileName) {
 
     //Notes are stored in this nested array list to mirror the track-note structure (depending on type of midi file)
-    tracks = new ArrayList<ArrayList<Note>>();
+    tracks = new ArrayList<>();
     Track[] trx;
 
     try {
@@ -37,7 +37,7 @@ public class MidiLoader {
       trx = mySeq.getTracks();
 
       for (int i = 0; i < trx.length; i++) {
-        ArrayList<Note> trackAsList = new ArrayList<Note>();
+        ArrayList<MIDINote> trackAsList = new ArrayList<>();
         tracks.add(trackAsList);
         Track t = trx[i];
         if (DO_PRINT) {
@@ -86,7 +86,7 @@ public class MidiLoader {
                           maxTicks = endTime;
                         }
                         //create a new "Note" instance, store it
-                        Note n = new Note(startTime, endTime - startTime, ch, vel, pitch);
+                        MIDINote n = new MIDINote(startTime, endTime, ch, vel, pitch);
                         trackAsList.add(n);
                         t.remove(t.get(0));
                         break;
@@ -112,7 +112,7 @@ public class MidiLoader {
     }
   }
 
-  public ArrayList<Note> trackAsArrayList(int i) {
+  public ArrayList<MIDINote> trackAsArrayList(int i) {
     return tracks.get(i);
     // return null;
   }
