@@ -7,12 +7,18 @@ public class DECNote extends Note {
   private final static int MIN_LENGTH = 75;
   /* Duration of the DECNote in milliseconds */
   private long duration;
+  /* Piano key of this note */
+  private int pianoKey;
 
   public DECNote(MIDINote note, double ticksPerMillis) {
     this.start = note.getStartAsMillis(ticksPerMillis);
     this.end = note.getEndAsMillis(ticksPerMillis);
     this.duration = note.getDurationAsMillis(ticksPerMillis);
-    this.pitch = PitchAnalysis.pianoKeyToToneNumber(note.getPitch());
+    if (duration < MIN_LENGTH) {
+      duration = MIN_LENGTH;
+    }
+    pianoKey = note.getPitch();
+    this.pitch = PitchAnalysis.pianoKeyToToneNumber(pianoKey);
   }
 
   public DECNote(MIDINote note, double ticksPerMillis, String phone) {
@@ -35,6 +41,31 @@ public class DECNote extends Note {
   @Override
   public PitchUnit getPitchUnit() {
     return PitchUnit.TONE_NUMBER;
+  }
+
+  /**
+   * @return Start of the note in terms of milliseconds
+   */
+  public long getStartAsMillis() {
+    return start;
+  }
+
+  /**
+   * @return End of the note in terms of milliseconds
+   */
+  public long getEndAsMillis() {
+    return end;
+  }
+
+  /**
+   * @return Duration of the note in terms of milliseconds
+   */
+  public long getDurationAsMillis() {
+    return duration;
+  }
+
+  public int getPianoKey() {
+    return pianoKey;
   }
 
   @Override
