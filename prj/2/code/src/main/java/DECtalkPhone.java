@@ -17,7 +17,7 @@ public class DECtalkPhone {
   private TimeFrame timeFrame;
   /* Audio clip of this phone */
   private Clip clip;
-  private final static int MIN_LENGTH = 75;
+  private final static int MIN_LENGTH = 0;
 
   /**
    * Creates an instance of DECtalkPhone using the information from phone recognition

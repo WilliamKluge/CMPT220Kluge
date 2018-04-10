@@ -138,6 +138,11 @@ public class MIDIToDEC {
 
     }
 
+    int i = 0;
+    for (ArrayList<DECtalkPhone> t : builtTracks) {
+      i += t.size();
+    }
+
     System.out.println("Generating wav files");
     int wavName = 0;
     for (ArrayList<DECtalkPhone> decTrack : builtTracks) {
