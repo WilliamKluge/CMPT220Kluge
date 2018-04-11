@@ -11,6 +11,8 @@ public class autoDEC {
 
   /* Name commands to use for different tracks */
   private final static String[] VOICE_SETTINGS = new String[]{"[:np]", "[:nh]", "[:nf]", "[:nd]"};
+  /* Maximum length of a pause before it gets broken up */
+  public final static int MAX_WAIT_LENGTH = 16000;
   /* If the program should print the DECtalk commands */
   private final static boolean PRINT_DEC = true;
   /* Highest tone that the program will allow usage of */
@@ -109,19 +111,25 @@ public class autoDEC {
    * @param DECTrack Track to work with
    */
   private static void addPauses(ArrayList<DECNote> DECTrack) {
-    if (DECTrack.size() < 2) {
-      // Nothing to add pauses with
-      return;
-    }
-
-    for (int i = 0; i < DECTrack.size() - 1; ++i) {
+    for (int i = 0; i < DECTrack.size(); ++i) {
       long iStart = DECTrack.get(i).getStartAsMillis();
       long lastEnd = (i == 0) ? 0 : DECTrack.get(i - 1).getEndAsMillis();
+      long pauseTime = iStart - lastEnd - 1;
 
-      if (Math.abs(iStart - lastEnd) > 1) {
+      if (pauseTime > 1) {
         // If the difference in their times is larger than 1 (minimum separator of notes)
-        DECTrack.add(i, new DECNote(lastEnd + 1, iStart - 1));
-        ++i; // Skip the pause that was just added
+        int j = 1;
+        while (pauseTime >= MAX_WAIT_LENGTH) {
+          DECTrack.add(i, new DECNote(MAX_WAIT_LENGTH * j, MAX_WAIT_LENGTH * (j + 1) - 1));
+          pauseTime -= MAX_WAIT_LENGTH;
+          ++j;
+        }
+        if (pauseTime > 0) {
+          DECTrack.add(i, new DECNote(MAX_WAIT_LENGTH * j, MAX_WAIT_LENGTH * j + pauseTime));
+        }
+//        DECTrack.add(i, new DECNote(lastEnd + 1, iStart - 1));
+        ++i;
+        i += j; // Skip the pauses that was just added
       }
     }
   }

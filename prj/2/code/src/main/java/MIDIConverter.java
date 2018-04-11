@@ -2,6 +2,7 @@ import MIDIFileHandling.MidiLoader;
 import Notes.DECNote;
 import Notes.MIDINote;
 import java.util.ArrayList;
+import javafx.util.Pair;
 
 /**
  * Converts a MIDI file into a DECtalk file
@@ -10,11 +11,13 @@ public class MIDIConverter {
 
   /* Number that represents middle c (base/treable split) in MIDI files */
   private final static int MIDI_MIDDLE_C = 60;
+  /* Regions for splitting up keys in a MIDI file into DECtalk track */
+  private final static int TRACK_NOTE_SEPARATION = 60;
   /* Maximum number of keys into a different octave a note is allowed to be to still be part of
    * the same DEC track */
-  private final static int DIFFERENT_OCTAVE_BUFFER = 4;
+  private final static int DIFFERENT_OCTAVE_BUFFER = 10;
   /* Sound to use for all instrumental parts */
-  private final static String INSTRUMENT_SOUND = "uw";
+  private final static String INSTRUMENT_SOUND = "ah";
   /* Loads MIDI file */
   private MidiLoader midiLoader;
   /* Number of MIDI ticks that occur per millisecond */
@@ -126,6 +129,25 @@ public class MIDIConverter {
     withinRange = withinRange || isSameOctave(firstPitch - DIFFERENT_OCTAVE_BUFFER, secondPitch);
 
     return withinRange;
+  }
+
+  /**
+   * Checks if a pitch is within the same range as another based on TRACK_NOTE_SEPARATION
+   * @param checkPitch Pitch to check
+   * @param trackPitch Pitch to check against
+   * @return If checkPitch and trackPitch are in the same range
+   */
+  private boolean inNoteSeparationRange(int checkPitch, int trackPitch) {
+    int rangeLow, rangeHigh; // rangeHigh could go > 108, does that matter though?
+    for (rangeLow = 1, rangeHigh = TRACK_NOTE_SEPARATION; rangeLow < TRACK_NOTE_SEPARATION;
+        rangeLow += TRACK_NOTE_SEPARATION, rangeHigh += TRACK_NOTE_SEPARATION) {
+      if (rangeLow <= trackPitch && trackPitch <= rangeHigh) {
+        break;
+      }
+    }
+
+    return rangeLow - DIFFERENT_OCTAVE_BUFFER <= checkPitch
+        && checkPitch <= rangeHigh + DIFFERENT_OCTAVE_BUFFER;
   }
 
 }
