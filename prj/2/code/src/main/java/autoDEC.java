@@ -8,10 +8,15 @@ import java.util.ArrayList;
  * Main class for autoDEC
  */
 public class autoDEC {
+
   /* Name commands to use for different tracks */
-  private final static String[] VOICE_SETTINGS = new String[] {"[:np]", "[:nh]", "[:nf]", "[:nd]"};
+  private final static String[] VOICE_SETTINGS = new String[]{"[:np]", "[:nh]", "[:nf]", "[:nd]"};
   /* If the program should print the DECtalk commands */
   private final static boolean PRINT_DEC = true;
+  /* Highest tone that the program will allow usage of */
+  private final static int CONFIG_HIGHEST_TONE = 37;
+  /* Lowest tone that the program will allow usage of */
+  private final static int CONFIG_LOWEST_TONE = 1;
 
   public static void main(String[] args) {
 
@@ -27,8 +32,9 @@ public class autoDEC {
       DECTracks = new MIDIConverter(inputFilePath).getDECTracks();
     }
 
-    // Add pauses to all tracks
+    // Scale notes and add pauses to all tracks
     for (ArrayList<DECNote> track : DECTracks) {
+      refractorTrack(track);
       addPauses(track);
     }
 
@@ -48,6 +54,7 @@ public class autoDEC {
 
       // Build the command
       StringBuilder command = new StringBuilder(getVoiceCommand(track));
+      command.append("[");
       for (DECNote phone : decTrack) {
         command.append(phone.toString());
       }
@@ -63,7 +70,7 @@ public class autoDEC {
 
     ///// WAVE file output. Requires a Windows OS (I know, ew) and DECtalk's speak.exe /////
 
-    if (!System.getProperty("os.name").equals("win")) {
+    if (false/*!System.getProperty("os.name").contains("win")*/) {
       System.out.println("DECtalk is not compatible with any non-windows system. Cannot output"
           + "WAVE files.");
       return;
@@ -79,7 +86,7 @@ public class autoDEC {
     int wavName = 0;
     for (String command : commandList) {
       ProcessBuilder pb = new ProcessBuilder("dectalk\\say.exe",
-          "-w", "generated\\" + command.substring(0, 5) + "t" + wavName + ".wav",
+          "-w", "generated\\" + command.substring(3, 4) + "t" + wavName + ".wav",
           "-pre",
           "\"[:phoneme on]\"",
           command);
@@ -117,6 +124,46 @@ public class autoDEC {
         ++i; // Skip the pause that was just added
       }
     }
+  }
+
+  /**
+   * Adjusts notes so that the highest does not exceed 37 (highest tone in DECtalk)
+   *
+   * @param DECTrack Track to adjust notes on
+   */
+  private static void refractorTrack(ArrayList<DECNote> DECTrack) {
+    int highestTone = CONFIG_LOWEST_TONE - 1; // Start at 1 below min DECtalk tone
+    int lowestTone = CONFIG_HIGHEST_TONE + 1; // Start at 1 above max DECtalk tone
+
+    for (DECNote note : DECTrack) {
+      if (note.getPitch() > highestTone) {
+        highestTone = note.getPitch();
+      }
+      if (note.getPitch() < lowestTone) {
+        lowestTone = note.getPitch();
+      }
+    }
+
+    if (highestTone > CONFIG_HIGHEST_TONE || lowestTone < CONFIG_LOWEST_TONE) {
+      for (DECNote note : DECTrack) {
+        int scaledNote = scaleNote(note.getPitch(), lowestTone, highestTone);
+        note.setPitch(scaledNote);
+      }
+    }
+  }
+
+  /*
+   * Scales a given note to ensure the entire track stays within 1 to 37 while keeping note's
+   * original sound.
+   *
+   * @param x Value to scale
+   * @param trackMin Minimum value of the track
+   * @param trackMax Maximum value of the track
+   * @return x scaled to be within 1 to 37 and still in its place of the track
+   */
+  private static int scaleNote(int x, int trackMin, int trackMax) {
+    return (int) ((CONFIG_HIGHEST_TONE - CONFIG_LOWEST_TONE * 1.0) * (x - trackMin)
+        / (trackMax - trackMin) + 1);
   }
 
   /*
