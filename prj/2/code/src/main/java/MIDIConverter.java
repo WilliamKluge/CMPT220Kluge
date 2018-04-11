@@ -8,11 +8,13 @@ import java.util.ArrayList;
  */
 public class MIDIConverter {
 
-  /*  */
+  /* Number that represents middle c (base/treable split) in MIDI files */
   private final static int MIDI_MIDDLE_C = 60;
   /* Maximum number of keys into a different octave a note is allowed to be to still be part of
    * the same DEC track */
   private final static int DIFFERENT_OCTAVE_BUFFER = 4;
+  /* Sound to use for all instrumental parts */
+  private final static String INSTRUMENT_SOUND = "uw";
   /* Loads MIDI file */
   private MidiLoader midiLoader;
   /* Number of MIDI ticks that occur per millisecond */
@@ -48,8 +50,6 @@ public class MIDIConverter {
       }
     }
 
-    // TODO add pauses
-
     return DECTracks;
 
   }
@@ -67,21 +67,19 @@ public class MIDIConverter {
 
     ArrayList<DECNote> DECTrack = new ArrayList<>();
 
-    for (MIDINote note : MIDITrack) {
+    for (int i = 0; i < MIDITrack.size(); ++i) {
+      MIDINote note = MIDITrack.get(i);
+      DECNote lastNote;
 
-      if (DECTrack.size() == 0) {
-        DECTrack.add(new DECNote(note, ticksPerMillis));
-      } else {
-        DECNote lastNote = DECTrack.get(DECTrack.size() - 1);
-
-        if (noOverlap(note, lastNote) && (isSameOctave(note.getPitch(), lastNote.getPitch())
-            || isWithinDifferentOctaveRange(note.getPitch(), lastNote.getPianoKey()))) {
-          // If the notes do not overlap and they are in the same octave or in the allowed range
-          DECNote decNote = new DECNote(note, ticksPerMillis);
-          decNote.setChannel(channelID);
-          DECTrack.add(decNote);
-          MIDITrack.remove(note);
-        }
+      if (DECTrack.size() == 0 || noOverlap(note, lastNote = DECTrack.get(DECTrack.size() - 1))
+          && (isSameOctave(note.getPitch(), lastNote.getPitch())
+          || isWithinDifferentOctaveRange(note.getPitch(), lastNote.getPianoKey()))) {
+        // If the notes do not overlap and they are in the same octave or in the allowed range
+        DECNote decNote = new DECNote(note, ticksPerMillis, INSTRUMENT_SOUND);
+        decNote.setChannel(channelID);
+        DECTrack.add(decNote);
+        MIDITrack.remove(note);
+        --i; // Take into account the fact that we removed the current one
       }
     }
 
@@ -105,12 +103,12 @@ public class MIDIConverter {
   /**
    * Checks if the first note starts before the second note ends
    *
-   * @param firstNote First note to check
-   * @param secondNote Second note to check
+   * @param firstNote New note to check compatibility for
+   * @param secondNote Note already in the track
    * @return If the notes noOverlap
    */
   private boolean noOverlap(MIDINote firstNote, DECNote secondNote) {
-    return firstNote.getStartAsMillis(ticksPerMillis) < secondNote.getEndAsMillis();
+    return firstNote.getStartAsMillis(ticksPerMillis) > secondNote.getEndAsMillis();
   }
 
   /**

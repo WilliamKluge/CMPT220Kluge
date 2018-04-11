@@ -3,8 +3,9 @@ package Notes;
 import SoundHandling.PitchAnalysis;
 
 public class DECNote extends Note {
+
   /* Minimum length a DECNote is allowed to be in milliseconds */
-  private final static int MIN_LENGTH = 75;
+  private final static int MIN_LENGTH = 0;
   /* Duration of the DECNote in milliseconds */
   private long duration;
   /* Piano key of this note */
@@ -24,6 +25,19 @@ public class DECNote extends Note {
   public DECNote(MIDINote note, double ticksPerMillis, String phone) {
     this(note, ticksPerMillis);
     this.word = phone;
+  }
+
+  /**
+   * Creates a new note that represents a pause
+   *
+   * @param startTime Time the pause starts
+   * @param endTime Time the pause ends
+   */
+  public DECNote(long startTime, long endTime) {
+    this.start = startTime;
+    this.end = endTime;
+    this.duration = endTime - startTime;
+    this.word = "_";
   }
 
   /**
@@ -71,7 +85,7 @@ public class DECNote extends Note {
   @Override
   public String toString() {
     StringBuilder DECformat = new StringBuilder(word);
-    long calculatedLength = duration < MIN_LENGTH ? MIN_LENGTH : duration;
+    long calculatedLength = duration < MIN_LENGTH && !word.equals("_") ? MIN_LENGTH : duration;
     DECformat.append("<").append(calculatedLength);
 
     if (!word.equals("_")) { // If the phone is not a wait (needs tone number added)

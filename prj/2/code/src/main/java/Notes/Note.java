@@ -143,7 +143,7 @@ public abstract class Note {
     if (getTimeUnit() == TimeUnit.MILLISECOND) {
       return start - end;
     }
-    return getStartAsMillis(ticksPerMillis) - getEndAsMillis(ticksPerMillis);
+    return getEndAsMillis(ticksPerMillis) - getStartAsMillis(ticksPerMillis);
   }
 
   /**
@@ -210,5 +210,10 @@ public abstract class Note {
    */
   protected String getWord() {
     return word;
+  }
+
+  @Override
+  public String toString() {
+    return "{start: " + start + " end: " + end + " pitch: " + pitch + " channel: " + channel + "}";
   }
 }
