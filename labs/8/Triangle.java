@@ -1,3 +1,5 @@
+import Lab137.GeometricObject;
+
 public class Triangle extends GeometricObject {
 
   /* Three sides of the triangle */
