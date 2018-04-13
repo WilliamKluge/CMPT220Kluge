@@ -28,7 +28,7 @@ public class MIDIConverter {
     midiLoader = new MidiLoader(filePath);
 
     int PPQ = midiLoader.mySeq.getResolution();
-    int BPM = 120; // This can change a lot...time to calculate it!
+    int BPM = 80; // This can change a lot...time to calculate it!
     int ticksPerMinute = BPM * PPQ;
     ticksPerMillis = ticksPerMinute * (1.0 / 60000);
 
@@ -51,6 +51,7 @@ public class MIDIConverter {
         DECTracks.add(createDECTrack(midiTrack, channelID));
         ++channelID;
       }
+      System.out.println("Done with track");
     }
 
     return DECTracks;
@@ -65,6 +66,7 @@ public class MIDIConverter {
    * @param MIDITrack Track of DECNotes in the format of a MIDITrack (noOverlap allowed) to create
    * out of.
    * @return A track of DECNotes.
+   * TODO fix: some notes are getting lost somehow
    */
   private ArrayList<DECNote> createDECTrack(ArrayList<MIDINote> MIDITrack, int channelID) {
 

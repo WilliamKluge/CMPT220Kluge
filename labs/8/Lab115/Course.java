@@ -16,7 +16,7 @@ public class Course {
   private int numberOfStudents;
 
   /**
-   * Creates a new Lab115.Course object
+   * Creates a new Lab115.Lab109.Course object
    *
    * @param courseName Name of the course
    */
