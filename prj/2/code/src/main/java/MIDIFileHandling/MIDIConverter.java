@@ -28,7 +28,7 @@ public class MIDIConverter {
     midiLoader = new MidiLoader(filePath);
 
     int PPQ = midiLoader.mySeq.getResolution();
-    int BPM = 80; // This can change a lot...time to calculate it!
+    int BPM = 120; // This can change a lot...time to calculate it!
     int ticksPerMinute = BPM * PPQ;
     ticksPerMillis = ticksPerMinute * (1.0 / 60000);
 
@@ -73,11 +73,12 @@ public class MIDIConverter {
   /**
    * Creates a track of DECNotes that belong together (no overlapping, no large jumps in pitch).
    * Whenever this adds a note to the track it creates, that note get removed from MIDITrack. When
-   * all notes have been added the size of MIDITrack will be 0.
+   * all notes have been added, the size of MIDITrack will be 0.
+   *
    *
    * @param MIDITrack Track of DECNotes in the format of a MIDITrack (noOverlap allowed) to create
    * out of.
-   * @return A track of DECNotes.
+   * @return A track of DECNotes with their pitch defined by a piano key
    * TODO fix: some notes are getting lost somehow
    */
   private ArrayList<DECNote> createDECTrack(ArrayList<MIDINote> MIDITrack, int channelID) {
