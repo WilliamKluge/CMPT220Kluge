@@ -12,13 +12,6 @@ import java.util.Map;
  */
 public class MIDIConverter {
 
-  /* Number that represents middle c (base/treable split) in MIDI files */
-  private final static int MIDI_MIDDLE_C = 60;
-  /* Regions for splitting up keys in a MIDI file into DECtalk track */
-  private final static int TRACK_NOTE_SEPARATION = 60;
-  /* Maximum number of keys into a different octave a note is allowed to be to still be part of
-   * the same DEC track */
-  private final static int DIFFERENT_OCTAVE_BUFFER = 10;
   /* If printing of debugging information should be done */
   private final static boolean PRINT_DEBUG = false;
   /* Sound to use for all instrumental parts */
@@ -30,6 +23,7 @@ public class MIDIConverter {
   /* NoteRanges for converting MIDIs mapped to the number of times that range has been used */
   private Map<NoteRange, Integer> rangeMap;
   private ArrayList<NoteRange> ranges;
+  private int BPM;
 
   /**
    *
@@ -41,7 +35,7 @@ public class MIDIConverter {
     midiLoader = new MidiLoader(filePath);
 
     int PPQ = midiLoader.mySeq.getResolution();
-    int BPM = 100; // This can change a lot...time to calculate it!
+    BPM = 120; // This can change a lot...time to calculate it!
     int ticksPerMinute = BPM * PPQ;
     ticksPerMillis = ticksPerMinute * (1.0 / 60000);
 

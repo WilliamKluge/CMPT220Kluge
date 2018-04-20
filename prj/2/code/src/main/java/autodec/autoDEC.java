@@ -1,15 +1,15 @@
+package autodec;
+
 import MIDIFileHandling.MIDIConverter;
 import Notes.DECNote;
 import SoundHandling.NoteRange;
-import SoundHandling.WAVEMixer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * Main class for autoDEC
+ * Main class for autodec.autoDEC
+ * TODO it seems like some notes are still not lining up, fix this
  */
 public class autoDEC {
 
@@ -18,7 +18,7 @@ public class autoDEC {
   /* If the program should print the DECtalk commands */
   private final static boolean PRINT_DEC = true;
   /* Highest tone that the program will allow usage of */
-  private final static int CONFIG_HIGHEST_TONE = 33;
+  private final static int CONFIG_HIGHEST_TONE = 37;
   /* Lowest tone that the program will allow usage of */
   private final static int CONFIG_LOWEST_TONE = 1;
   /* NoteRanges to use for separating notes */
@@ -33,11 +33,10 @@ public class autoDEC {
       ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax, lowCommands));
     }
     autogenMax = 108;
-    String[] highCommands = {"[:nu]", "[:nb]",
-        "[:nk]"};
+    String[] highCommands = {"[:nu]", "[:nb]", "[:nk]"};
     for (int i = 6; i < autogenMax; i += 5) {
-      ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax,
-          highCommands));
+      ranges.add(NoteRange.createWithSpecificRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax,
+          5, 9, highCommands));
     }
   }
 

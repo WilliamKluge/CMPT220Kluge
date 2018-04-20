@@ -46,7 +46,7 @@ public abstract class Note {
    * @param start Time the note starts at (in TimeUnit)
    * @param end Time the note ends at (in TimeUnit)
    * @param channel Channel of the note. This means different things for different derived classes,
-   * but this is a determining factor of which voice autoDEC assigns to the note.
+   * but this is a determining factor of which voice autodec.autoDEC assigns to the note.
    * @param velocity Velocity of the note (basically how hard was the key smashed)
    * @param pitch Pitch of the note. Again, this means different things for different derived
    * classes, b
@@ -65,7 +65,7 @@ public abstract class Note {
    * @param start Time the note starts at (in TimeUnit)
    * @param end Time the note ends at (in TimeUnit)
    * @param channel Channel of the note. This means different things for different derived classes,
-   * but this is a determining factor of which voice autoDEC assigns to the note.
+   * but this is a determining factor of which voice autodec.autoDEC assigns to the note.
    * @param velocity Velocity of the note (basically how hard was the key smashed)
    * @param pitch Pitch of the note. Again, this means different things for different derived
    * classes, b

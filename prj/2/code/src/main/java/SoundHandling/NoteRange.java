@@ -33,8 +33,8 @@ public class NoteRange {
     this.voiceCommands = voiceCommands;
     this.highestNote = highestNote;
     this.lowestNote = lowestNote;
-    rangeBufferUp = 0; // Default values for range buffer
-    rangeBufferDown = 0;
+    rangeBufferUp = 5; // Default values for range buffer
+    rangeBufferDown = 5;
   }
 
   /**

@@ -35,7 +35,7 @@ public class CommandHandler {
   /* Commands that need to be run. (Needed for chained commands, especially after a lock) */
   private ArrayList<String> queuedCommands;
   /* String describing how to run commands TODO just get this in a man page or something*/
-  private final static String helpString = "How to run autoDEC commands:\n"
+  private final static String helpString = "How to run autodec.autoDEC commands:\n"
       + "A '-' precedes any main command AFTER the first main command. If you are not chaining "
       + "commands then just enter the characters for the command. These commands specify what "
       + "kind of operation will run\n"
