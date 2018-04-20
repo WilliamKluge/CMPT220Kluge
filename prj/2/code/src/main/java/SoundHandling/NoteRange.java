@@ -111,4 +111,9 @@ public class NoteRange {
   public String[] getVoiceCommands() {
     return voiceCommands;
   }
+
+  @Override
+  public String toString() {
+    return String.format("%03d", lowestNote) + " " + String.format("%03d", highestNote);
+  }
 }

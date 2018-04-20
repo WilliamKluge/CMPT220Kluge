@@ -1,36 +1,44 @@
 import MIDIFileHandling.MIDIConverter;
 import Notes.DECNote;
 import SoundHandling.NoteRange;
+import SoundHandling.WAVEMixer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Main class for autoDEC
  */
 public class autoDEC {
 
-  /* Name commands to use for different tracks */
-  private final static String[] VOICE_SETTINGS = new String[]{"[:np]", "[:nh]", "[:nf]", "[:nd]"};
   /* Maximum length of a pause before it gets broken up */
   public final static int MAX_WAIT_LENGTH = 16000;
   /* If the program should print the DECtalk commands */
   private final static boolean PRINT_DEC = true;
   /* Highest tone that the program will allow usage of */
-  private final static int CONFIG_HIGHEST_TONE = 37;
+  private final static int CONFIG_HIGHEST_TONE = 33;
   /* Lowest tone that the program will allow usage of */
   private final static int CONFIG_LOWEST_TONE = 1;
   /* NoteRanges to use for separating notes */
   private final static ArrayList<NoteRange> ranges;
 
   static {
+    String[] lowCommands = {"[:np]", "[:nh]"};
     ranges = new ArrayList<>();
-    ranges.add(new NoteRange(1, 5, "[:np]", "[:nh]"));
-    int autogenMax = 102;
+    ranges.add(new NoteRange(1, 5, lowCommands));
+    int autogenMax = 60;
     for (int i = 6; i < autogenMax; i += 5) {
-      ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax, "[:np]", "[:nh]"));
+      ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax, lowCommands));
     }
-    ranges.add(new NoteRange(103, 108, "[:nu]", "[:nb]", "[:nk]"));
+    autogenMax = 108;
+    String[] highCommands = {"[:nu]", "[:nb]",
+        "[:nk]"};
+    for (int i = 6; i < autogenMax; i += 5) {
+      ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax,
+          highCommands));
+    }
   }
 
   public static void main(String[] args) {
@@ -67,8 +75,13 @@ public class autoDEC {
         ++i;
       }
 
+      // Get the track's note range
+      String noteRange = decTrack.get(0).getRange().toString();
+
       // Build the command
-      StringBuilder command = new StringBuilder(decTrack.get(0).getVoiceCommand());
+      StringBuilder command = new StringBuilder(noteRange + " "
+          + String.format("%03d", decTrack.get(0).getChannel()));
+      command.append(decTrack.get(0).getVoiceCommand());
       command.append("[");
       for (DECNote phone : decTrack) {
         command.append(phone.toString());
@@ -91,6 +104,14 @@ public class autoDEC {
       return;
     }
 
+    System.out.println("Deleting generated files from previous iteration");
+    File[] files = new File("dectalk\\generated").listFiles();
+    if(files!=null) { //some JVMs return null for empty dirs
+      for(File f: files) {
+        f.delete();
+      }
+    }
+
     // Make sure the executable file exists
     File exe = new File("dectalk\\say.exe");
     if (!exe.exists()) {
@@ -98,13 +119,14 @@ public class autoDEC {
       return;
     }
 
-    int wavName = 0;
+    System.out.println("Exporting WAVE files ");
     for (String command : commandList) {
+      String fileName = command.substring(0, 11) + ".wav";
       ProcessBuilder pb = new ProcessBuilder("dectalk\\say.exe",
-          "-w", "generated\\" + command.substring(3, 4) + "t" + wavName + ".wav",
+          "-w", "generated\\" + fileName,
           "-pre",
           "\"[:phoneme on]\"",
-          command);
+          command.substring(11)); // Note range specifiers are characters 0 through 6, channel too
       pb.directory(new File("dectalk\\"));
       try {
         pb.start();
@@ -112,10 +134,27 @@ public class autoDEC {
         System.err.println("Could not start say.exe");
         e.printStackTrace();
       }
-
-      ++wavName; // New wavName for every track
     }
 
+//    File outputFile = new File("dectalk\\generated");
+//    for (int i = 0; i < files.length - 1; ++i, files = outputFile.listFiles()) {
+//      // If the first note identifier is the same for both files
+//      File firstFile = files[i];
+//      File secondFile = files[i + 1];
+//      while (firstFile.getName().substring(0, 3).equals(secondFile.getName().substring(0, 3))) {
+//        try {
+//          firstFile = WAVEMixer.mixWAVEFiles(files[i], files[i + 1]);
+//          System.out.println("Deleting " + files[i].getName() + " and " + secondFile.getName());
+////          files[i].delete(); // files not actually deleting
+////          secondFile.delete();
+////          i -= 2; // Deleted two files
+//        } catch (Exception e) {
+//          e.printStackTrace();
+//        }
+//        ++i;
+//        secondFile = files[++i];
+//      }
+//    }
   }
 
   /*
@@ -196,13 +235,5 @@ public class autoDEC {
     return (int) ((CONFIG_HIGHEST_TONE - CONFIG_LOWEST_TONE * 1.0) * (x - trackMin)
         / (trackMax - trackMin) + 1);
   }
-
-  /*
-   * @param channelID ID of the channel to get a voice command for
-   * @return Voice command associated with the channel
-   */
-//  private static String getVoiceCommand(int channelID) {
-//    return VOICE_SETTINGS[channelID % VOICE_SETTINGS.length];
-//  }
 
 }
