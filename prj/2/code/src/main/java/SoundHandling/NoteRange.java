@@ -107,4 +107,8 @@ public class NoteRange {
 
     return fits;
   }
+
+  public String[] getVoiceCommands() {
+    return voiceCommands;
+  }
 }

@@ -22,12 +22,15 @@ public class autoDEC {
   private final static int CONFIG_LOWEST_TONE = 1;
   /* NoteRanges to use for separating notes */
   private final static ArrayList<NoteRange> ranges;
+
   static {
     ranges = new ArrayList<>();
     ranges.add(new NoteRange(1, 5, "[:np]", "[:nh]"));
-    for (int i = 6; i < 108; i += 5) {
-      ranges.add(new NoteRange(i, i + 4 <= 108 ? i + 4 : 108, "[:np]", "[:nh]"));
+    int autogenMax = 102;
+    for (int i = 6; i < autogenMax; i += 5) {
+      ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax, "[:np]", "[:nh]"));
     }
+    ranges.add(new NoteRange(103, 108, "[:nu]", "[:nb]", "[:nk]"));
   }
 
   public static void main(String[] args) {
@@ -65,7 +68,7 @@ public class autoDEC {
       }
 
       // Build the command
-      StringBuilder command = new StringBuilder(getVoiceCommand(track));
+      StringBuilder command = new StringBuilder(decTrack.get(0).getVoiceCommand());
       command.append("[");
       for (DECNote phone : decTrack) {
         command.append(phone.toString());
@@ -121,6 +124,9 @@ public class autoDEC {
    * @param DECTrack Track to work with
    */
   private static void addPauses(ArrayList<DECNote> DECTrack) {
+    NoteRange trackRange = DECTrack.get(0).getRange();
+    int channel = DECTrack.get(0).getChannel();
+
     for (int i = 0; i < DECTrack.size(); ++i) {
       long iStart = DECTrack.get(i).getStartAsMillis();
       long lastEnd = (i == 0) ? 0 : DECTrack.get(i - 1).getEndAsMillis();
@@ -130,17 +136,20 @@ public class autoDEC {
         // If the difference in their times is larger than 1 (minimum separator of notes)
         int j = 0;
         while (pauseTime >= MAX_WAIT_LENGTH) {
-          DECTrack.add(i,
-              new DECNote(MAX_WAIT_LENGTH * j, MAX_WAIT_LENGTH * (j + 1) - 1));
+          DECNote pause = new DECNote(MAX_WAIT_LENGTH * j, MAX_WAIT_LENGTH * (j + 1) - 1,
+              trackRange);
+          pause.setChannel(channel);
+          DECTrack.add(i, pause);
           pauseTime -= MAX_WAIT_LENGTH;
           ++j;
         }
         if (pauseTime > 0) {
-          DECTrack.add(i,
-              new DECNote(MAX_WAIT_LENGTH * j, MAX_WAIT_LENGTH * j + pauseTime));
+          DECNote pause = new DECNote(MAX_WAIT_LENGTH * j, MAX_WAIT_LENGTH * j + pauseTime,
+              trackRange);
+          pause.setChannel(channel);
+          DECTrack.add(i, pause);
           ++j;
         }
-//        DECTrack.add(i, new DECNote(lastEnd + 1, iStart - 1));
         i += j; // Skip the pauses that was just added
         // Loop ends with i == index of the note a pause was just added for, increment step moves
         // i to the next note that needs a pause
@@ -192,8 +201,8 @@ public class autoDEC {
    * @param channelID ID of the channel to get a voice command for
    * @return Voice command associated with the channel
    */
-  private static String getVoiceCommand(int channelID) {
-    return VOICE_SETTINGS[channelID % VOICE_SETTINGS.length];
-  }
+//  private static String getVoiceCommand(int channelID) {
+//    return VOICE_SETTINGS[channelID % VOICE_SETTINGS.length];
+//  }
 
 }

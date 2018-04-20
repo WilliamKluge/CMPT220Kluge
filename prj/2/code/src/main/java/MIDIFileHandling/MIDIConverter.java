@@ -4,6 +4,8 @@ import Notes.DECNote;
 import Notes.MIDINote;
 import SoundHandling.NoteRange;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Converts a MIDI file into a DECtalk file
@@ -25,7 +27,8 @@ public class MIDIConverter {
   private MidiLoader midiLoader;
   /* Number of MIDI ticks that occur per millisecond */
   private double ticksPerMillis;
-  /* NoteRanges to use while converting MIDIs */
+  /* NoteRanges for converting MIDIs mapped to the number of times that range has been used */
+  private Map<NoteRange, Integer> rangeMap;
   private ArrayList<NoteRange> ranges;
 
   /**
@@ -43,6 +46,8 @@ public class MIDIConverter {
     ticksPerMillis = ticksPerMinute * (1.0 / 60000);
 
     this.ranges = ranges;
+    this.rangeMap = new HashMap<>();
+    ranges.forEach(a -> this.rangeMap.put(a, 0));
 
   }
 
@@ -99,7 +104,6 @@ public class MIDIConverter {
    * @param MIDITrack Track of DECNotes in the format of a MIDITrack (noOverlap allowed) to create
    * out of.
    * @return A track of DECNotes with their pitch defined by a piano key
-   * TODO fix: some notes are getting lost somehow
    */
   private ArrayList<DECNote> createDECTrack(ArrayList<MIDINote> MIDITrack, int channelID) {
 
@@ -120,6 +124,8 @@ public class MIDIConverter {
           + MIDITrack.get(0).getPitch() + ", was found. Contact developer about support options");
     }
 
+    int trackIterationChannel = rangeMap.get(trackRange);
+
     // Actually make the track here by adding any notes from MIDI that fit
     for (int i = 0; i < MIDITrack.size(); ++i) {
       MIDINote midiNote = MIDITrack.get(i);
@@ -127,12 +133,15 @@ public class MIDIConverter {
       if (DECTrack.size() == 0 || noOverlap(midiNote, DECTrack.get(DECTrack.size() - 1))
           && trackRange.isInRange(midiNote)) {
         DECNote decNote = new DECNote(midiNote, ticksPerMillis, trackRange, INSTRUMENT_SOUND);
-        decNote.setChannel(channelID);
+        decNote.setChannel(trackIterationChannel);
         DECTrack.add(decNote);
         MIDITrack.remove(midiNote);
         --i; // Take into account the fact that we removed the current one
       }
     }
+
+    // Tell the map that we used this range, now it will select the next voice
+    rangeMap.put(trackRange, trackIterationChannel + 1);
 
     return DECTrack;
 

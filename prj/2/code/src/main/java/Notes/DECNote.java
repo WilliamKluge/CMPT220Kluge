@@ -50,11 +50,12 @@ public class DECNote extends Note {
    * @param startTime Time the pause starts
    * @param endTime Time the pause ends
    */
-  public DECNote(long startTime, long endTime) {
+  public DECNote(long startTime, long endTime, NoteRange range) {
     this.start = startTime;
     this.end = endTime;
     this.duration = endTime - startTime;
     this.word = "_";
+    this.range = range;
   }
 
   /**
@@ -97,6 +98,15 @@ public class DECNote extends Note {
 
   public int getPianoKey() {
     return pianoKey;
+  }
+
+  public String getVoiceCommand() {
+    int index = channel % range.getVoiceCommands().length;
+    return range.getVoiceCommands()[index];
+  }
+
+  public NoteRange getRange() {
+    return range;
   }
 
   @Override
