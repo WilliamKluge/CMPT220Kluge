@@ -1,5 +1,5 @@
+import MIDIFileHandling.MIDIConverter;
 import Notes.DECNote;
-import edu.cmu.sphinx.util.TimeFrame;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -118,18 +118,22 @@ public class autoDEC {
 
       if (pauseTime > 1) {
         // If the difference in their times is larger than 1 (minimum separator of notes)
-        int j = 1;
+        int j = 0;
         while (pauseTime >= MAX_WAIT_LENGTH) {
-          DECTrack.add(i, new DECNote(MAX_WAIT_LENGTH * j, MAX_WAIT_LENGTH * (j + 1) - 1));
+          DECTrack.add(i,
+              new DECNote(MAX_WAIT_LENGTH * j, MAX_WAIT_LENGTH * (j + 1) - 1));
           pauseTime -= MAX_WAIT_LENGTH;
           ++j;
         }
         if (pauseTime > 0) {
-          DECTrack.add(i, new DECNote(MAX_WAIT_LENGTH * j, MAX_WAIT_LENGTH * j + pauseTime));
+          DECTrack.add(i,
+              new DECNote(MAX_WAIT_LENGTH * j, MAX_WAIT_LENGTH * j + pauseTime));
+          ++j;
         }
 //        DECTrack.add(i, new DECNote(lastEnd + 1, iStart - 1));
-        ++i;
         i += j; // Skip the pauses that was just added
+        // Loop ends with i == index of the note a pause was just added for, increment step moves
+        // i to the next note that needs a pause
       }
     }
   }

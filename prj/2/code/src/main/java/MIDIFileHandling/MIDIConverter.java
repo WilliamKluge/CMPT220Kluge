@@ -1,8 +1,8 @@
-import MIDIFileHandling.MidiLoader;
+package MIDIFileHandling;
+
 import Notes.DECNote;
 import Notes.MIDINote;
 import java.util.ArrayList;
-import javafx.util.Pair;
 
 /**
  * Converts a MIDI file into a DECtalk file
@@ -45,6 +45,8 @@ public class MIDIConverter {
     ArrayList<ArrayList<DECNote>> DECTracks = new ArrayList<>();
     int channelID = 0;
 
+    System.out.println("Sum of MIDI track: " + sumOfTracks(midiLoader.tracks));
+
     // For every MIDI track (tracks copied so that notes can be taken out without damaging the data)
     for (ArrayList<MIDINote> midiTrack : new ArrayList<>(midiLoader.tracks)) {
       while (midiTrack.size() > 0) {
@@ -54,8 +56,18 @@ public class MIDIConverter {
       System.out.println("Done with track");
     }
 
+    System.out.println("Sum of DEC track: " + sumOfTracks(DECTracks));
+
     return DECTracks;
 
+  }
+
+  private<T> long sumOfTracks(ArrayList<ArrayList<T>> tracks) {
+    long sum = 0;
+    for (ArrayList<T> track : tracks) {
+      sum += track.size();
+    }
+    return sum;
   }
 
   /**
