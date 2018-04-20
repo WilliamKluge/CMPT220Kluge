@@ -50,12 +50,11 @@ public class DECNote extends Note {
    * @param startTime Time the pause starts
    * @param endTime Time the pause ends
    */
-  public DECNote(long startTime, long endTime, NoteRange range) {
+  public DECNote(long startTime, long endTime) {
     this.start = startTime;
     this.end = endTime;
     this.duration = endTime - startTime;
     this.word = "_";
-    this.range = range;
   }
 
   /**

@@ -1,5 +1,6 @@
 import MIDIFileHandling.MIDIConverter;
 import Notes.DECNote;
+import SoundHandling.NoteRange;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +20,15 @@ public class autoDEC {
   private final static int CONFIG_HIGHEST_TONE = 37;
   /* Lowest tone that the program will allow usage of */
   private final static int CONFIG_LOWEST_TONE = 1;
+  /* NoteRanges to use for separating notes */
+  private final static ArrayList<NoteRange> ranges;
+  static {
+    ranges = new ArrayList<>();
+    ranges.add(new NoteRange(1, 5, "[:np]", "[:nh]"));
+    for (int i = 6; i < 108; i += 5) {
+      ranges.add(new NoteRange(i, i + 4 <= 108 ? i + 4 : 108, "[:np]", "[:nh]"));
+    }
+  }
 
   public static void main(String[] args) {
 
@@ -31,7 +41,7 @@ public class autoDEC {
     ArrayList<ArrayList<DECNote>> DECTracks = new ArrayList<>();
 
     if (inputFilePath.contains(".mid")) {
-      DECTracks = new MIDIConverter(inputFilePath).getDECTracks();
+      DECTracks = new MIDIConverter(inputFilePath, ranges).getDECTracks();
     }
 
     // Scale notes and add pauses to all tracks

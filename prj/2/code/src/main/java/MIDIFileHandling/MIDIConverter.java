@@ -38,7 +38,7 @@ public class MIDIConverter {
     midiLoader = new MidiLoader(filePath);
 
     int PPQ = midiLoader.mySeq.getResolution();
-    int BPM = 120; // This can change a lot...time to calculate it!
+    int BPM = 80; // This can change a lot...time to calculate it!
     int ticksPerMinute = BPM * PPQ;
     ticksPerMillis = ticksPerMinute * (1.0 / 60000);
 

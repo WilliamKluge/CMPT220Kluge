@@ -2,7 +2,7 @@ public class GenerateSpread {
 
   public static void main(String[] args) {
 
-    String[] voices = new String[] {"h", "p", "k"};
+    String[] voices = new String[] {"p", "h", "f", "d", "b", "u", "w", "r", "k", "v"};
 
     System.out.println("[:phoneme on]");
 

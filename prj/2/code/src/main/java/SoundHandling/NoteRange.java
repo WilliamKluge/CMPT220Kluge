@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class NoteRange {
 
   /* DECtalk voice commands to be used on notes in this range */
-  private ArrayList<String> voiceCommands;
+  private String[] voiceCommands;
   /* Lowest note (in terms of piano keys) regularly allowed in this range */
   private int highestNote;
   /* Highest note (in terms of piano keys) regularly allowed in this range */
@@ -26,15 +26,15 @@ public class NoteRange {
    * Creates a NoteRange with the default range buffers.
    *
    * @param voiceCommands DECtalk voice commands that can be used by this class
-   * @param highestNote Highest note (in terms of piano keys) that is allowed in this range
    * @param lowestNote Lowest note (in terms of piano keys) that is allowed in this range
+   * @param highestNote Highest note (in terms of piano keys) that is allowed in this range
    */
-  public NoteRange(ArrayList<String> voiceCommands, int highestNote, int lowestNote) {
+  public NoteRange(int lowestNote, int highestNote, String... voiceCommands) {
     this.voiceCommands = voiceCommands;
     this.highestNote = highestNote;
     this.lowestNote = lowestNote;
-    rangeBufferUp = 5; // Default values for range buffer
-    rangeBufferDown = 5;
+    rangeBufferUp = 0; // Default values for range buffer
+    rangeBufferDown = 0;
   }
 
   /**
@@ -47,9 +47,9 @@ public class NoteRange {
    * @param rangeBufferDown Amount of keys (piano) allowed below the lowest note
    * @return A NoteRange with the specified qualities
    */
-  public static NoteRange createWithSpecificRange(ArrayList<String> voiceCommands, int highestNote,
-      int lowestNote, int rangeBufferUp, int rangeBufferDown) {
-    NoteRange range = new NoteRange(voiceCommands, highestNote, lowestNote);
+  public static NoteRange createWithSpecificRange(int highestNote,
+      int lowestNote, int rangeBufferUp, int rangeBufferDown, String... voiceCommands) {
+    NoteRange range = new NoteRange(highestNote, lowestNote, voiceCommands);
     range.rangeBufferUp = rangeBufferUp;
     range.rangeBufferDown = rangeBufferDown;
     return range;
@@ -99,12 +99,10 @@ public class NoteRange {
   }
 
   private boolean fitsInRange(int pitch) {
-    boolean fits = true;
+    boolean fits = false;
 
-    if (pitch < lowestNote - rangeBufferDown) {
-      fits = false;
-    } else if (pitch > highestNote + rangeBufferUp) {
-      fits = false;
+    if (pitch >= lowestNote - rangeBufferDown && pitch <= highestNote + rangeBufferUp) {
+      fits = true;
     }
 
     return fits;
