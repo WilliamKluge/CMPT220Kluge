@@ -1,6 +1,7 @@
 package SoundHandling;
 
 import Notes.DECNote;
+import Notes.MIDINote;
 import java.util.ArrayList;
 
 public class NoteRange {
@@ -61,15 +62,7 @@ public class NoteRange {
    * @return If the note fits in this range
    */
   public boolean isInRange(DECNote note) {
-    boolean fits = true;
-
-    if (note.getPitch() < lowestNote - rangeBufferDown) {
-      fits = false;
-    } else if (note.getPitch() > highestNote + rangeBufferUp) {
-      fits = false;
-    }
-
-    return fits;
+    return fitsInRange(note.getPianoKey());
   }
 
   /**
@@ -82,5 +75,38 @@ public class NoteRange {
    */
   public static boolean isInRange(NoteRange range, DECNote note) {
     return range.isInRange(note);
+  }
+
+  /**
+   * Checks if a given MIDINote fits into this range.
+   *
+   * @param note Note to check with
+   * @return If the note fits in this range.
+   */
+  public boolean isInRange(MIDINote note) {
+    return fitsInRange(note.getPitch());
+  }
+
+  /**
+   * Checks if a given MIDINote fits into a NoteRange.
+   *
+   * @param range Range to check if the note exists in
+   * @param note Note to check with
+   * @return If the note fits in the given range
+   */
+  public static boolean isInRange(NoteRange range, MIDINote note) {
+    return range.fitsInRange(note.getPitch());
+  }
+
+  private boolean fitsInRange(int pitch) {
+    boolean fits = true;
+
+    if (pitch < lowestNote - rangeBufferDown) {
+      fits = false;
+    } else if (pitch > highestNote + rangeBufferUp) {
+      fits = false;
+    }
+
+    return fits;
   }
 }

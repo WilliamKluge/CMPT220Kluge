@@ -2,6 +2,7 @@ package MIDIFileHandling;
 
 import Notes.DECNote;
 import Notes.MIDINote;
+import SoundHandling.NoteRange;
 import java.util.ArrayList;
 
 /**
@@ -16,14 +17,23 @@ public class MIDIConverter {
   /* Maximum number of keys into a different octave a note is allowed to be to still be part of
    * the same DEC track */
   private final static int DIFFERENT_OCTAVE_BUFFER = 10;
+  /* If printing of debugging information should be done */
+  private final static boolean PRINT_DEBUG = false;
   /* Sound to use for all instrumental parts */
   private final static String INSTRUMENT_SOUND = "ah";
   /* Loads MIDI file */
   private MidiLoader midiLoader;
   /* Number of MIDI ticks that occur per millisecond */
   private double ticksPerMillis;
+  /* NoteRanges to use while converting MIDIs */
+  private ArrayList<NoteRange> ranges;
 
-  public MIDIConverter(String filePath) {
+  /**
+   *
+   * @param filePath Path to the MIDI file to convert
+   * @param ranges NoteRanges to use for separating notes
+   */
+  public MIDIConverter(String filePath, ArrayList<NoteRange> ranges) {
 
     midiLoader = new MidiLoader(filePath);
 
@@ -31,6 +41,8 @@ public class MIDIConverter {
     int BPM = 120; // This can change a lot...time to calculate it!
     int ticksPerMinute = BPM * PPQ;
     ticksPerMillis = ticksPerMinute * (1.0 / 60000);
+
+    this.ranges = ranges;
 
   }
 
@@ -45,18 +57,26 @@ public class MIDIConverter {
     ArrayList<ArrayList<DECNote>> DECTracks = new ArrayList<>();
     int channelID = 0;
 
-    System.out.println("Sum of MIDI track: " + sumOfTracks(midiLoader.tracks));
+    if (PRINT_DEBUG) {
+      System.out.println("Sum of MIDI track: " + sumOfTracks(midiLoader.tracks));
+    }
 
     // For every MIDI track (tracks copied so that notes can be taken out without damaging the data)
     for (ArrayList<MIDINote> midiTrack : new ArrayList<>(midiLoader.tracks)) {
+      // While there are still notes to create from
       while (midiTrack.size() > 0) {
         DECTracks.add(createDECTrack(midiTrack, channelID));
         ++channelID;
       }
-      System.out.println("Done with track");
+
+      if (PRINT_DEBUG) {
+        System.out.println("Done with track");
+      }
     }
 
-    System.out.println("Sum of DEC track: " + sumOfTracks(DECTracks));
+    if (PRINT_DEBUG) {
+      System.out.println("Sum of DEC track: " + sumOfTracks(DECTracks));
+    }
 
     return DECTracks;
 
@@ -85,37 +105,37 @@ public class MIDIConverter {
 
     ArrayList<DECNote> DECTrack = new ArrayList<>();
 
-    for (int i = 0; i < MIDITrack.size(); ++i) {
-      MIDINote note = MIDITrack.get(i);
-      DECNote lastNote;
+    // Get the range of the first note, which will be the only range to allow in this iteration
+    NoteRange trackRange = null;
+    for (int i = 0; trackRange == null && i < ranges.size(); ++i) {
+      MIDINote firstNote = MIDITrack.get(0);
+      if (ranges.get(i).isInRange(firstNote)) {
+        trackRange = ranges.get(i);
+      }
+    }
 
-      if (DECTrack.size() == 0 || noOverlap(note, lastNote = DECTrack.get(DECTrack.size() - 1))
-          && (isSameOctave(note.getPitch(), lastNote.getPitch())
-          || isWithinDifferentOctaveRange(note.getPitch(), lastNote.getPianoKey()))) {
-        // If the notes do not overlap and they are in the same octave or in the allowed range
-        DECNote decNote = new DECNote(note, ticksPerMillis, INSTRUMENT_SOUND);
+    // If the note was a pitch not in any NoteRange added to the program
+    if (trackRange == null) {
+      throw new UnsupportedOperationException("An unsupported note, "
+          + MIDITrack.get(0).getPitch() + ", was found. Contact developer about support options");
+    }
+
+    // Actually make the track here by adding any notes from MIDI that fit
+    for (int i = 0; i < MIDITrack.size(); ++i) {
+      MIDINote midiNote = MIDITrack.get(i);
+      // If the note does not overlap with the last note of the track and is in the trackRange
+      if (DECTrack.size() == 0 || noOverlap(midiNote, DECTrack.get(DECTrack.size() - 1))
+          && trackRange.isInRange(midiNote)) {
+        DECNote decNote = new DECNote(midiNote, ticksPerMillis, trackRange, INSTRUMENT_SOUND);
         decNote.setChannel(channelID);
         DECTrack.add(decNote);
-        MIDITrack.remove(note);
+        MIDITrack.remove(midiNote);
         --i; // Take into account the fact that we removed the current one
       }
     }
 
     return DECTrack;
 
-  }
-
-  /**
-   * Finds if two notes are in the same octave (both clef/both treble)
-   *
-   * @param firstNote First note to check (as piano key)
-   * @param secondNote Second note to check (as piano key)
-   * @return If the notes are in the same octave
-   */
-  private boolean isSameOctave(int firstNote, int secondNote) {
-    boolean differentOctave = firstNote >= MIDI_MIDDLE_C && secondNote >= MIDI_MIDDLE_C;
-    differentOctave = differentOctave || firstNote < MIDI_MIDDLE_C && secondNote < MIDI_MIDDLE_C;
-    return differentOctave;
   }
 
   /**
@@ -127,42 +147,6 @@ public class MIDIConverter {
    */
   private boolean noOverlap(MIDINote firstNote, DECNote secondNote) {
     return firstNote.getStartAsMillis(ticksPerMillis) > secondNote.getEndAsMillis();
-  }
-
-  /**
-   * Checks if two notes (represented as piano keys) are within the range allowed for notes to be in
-   * different octaves.
-   *
-   * @param firstPitch First note to check
-   * @param secondPitch Second note to check
-   * @return If the two pitches are allowed to be in the same track according to the space allowed
-   * for notes to be in different octaves.
-   */
-  private boolean isWithinDifferentOctaveRange(int firstPitch, int secondPitch) {
-    boolean withinRange = isSameOctave(firstPitch + DIFFERENT_OCTAVE_BUFFER,
-        secondPitch);
-    withinRange = withinRange || isSameOctave(firstPitch - DIFFERENT_OCTAVE_BUFFER, secondPitch);
-
-    return withinRange;
-  }
-
-  /**
-   * Checks if a pitch is within the same range as another based on TRACK_NOTE_SEPARATION
-   * @param checkPitch Pitch to check
-   * @param trackPitch Pitch to check against
-   * @return If checkPitch and trackPitch are in the same range
-   */
-  private boolean inNoteSeparationRange(int checkPitch, int trackPitch) {
-    int rangeLow, rangeHigh; // rangeHigh could go > 108, does that matter though?
-    for (rangeLow = 1, rangeHigh = TRACK_NOTE_SEPARATION; rangeLow < TRACK_NOTE_SEPARATION;
-        rangeLow += TRACK_NOTE_SEPARATION, rangeHigh += TRACK_NOTE_SEPARATION) {
-      if (rangeLow <= trackPitch && trackPitch <= rangeHigh) {
-        break;
-      }
-    }
-
-    return rangeLow - DIFFERENT_OCTAVE_BUFFER <= checkPitch
-        && checkPitch <= rangeHigh + DIFFERENT_OCTAVE_BUFFER;
   }
 
 }

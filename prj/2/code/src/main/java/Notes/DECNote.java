@@ -1,5 +1,6 @@
 package Notes;
 
+import SoundHandling.NoteRange;
 import SoundHandling.PitchAnalysis;
 
 public class DECNote extends Note {
@@ -10,8 +11,16 @@ public class DECNote extends Note {
   private long duration;
   /* Piano key of this note */
   private int pianoKey;
+  /* Range that this note exists in */
+  private NoteRange range;
 
-  public DECNote(MIDINote note, double ticksPerMillis) {
+  /*
+   * Creates a DECNote
+   *
+   * @param note MIDINote to create a DECNote from
+   * @param ticksPerMillis ticksPerMillis of the track
+   */
+  private DECNote(MIDINote note, double ticksPerMillis, NoteRange range) {
     this.start = note.getStartAsMillis(ticksPerMillis);
     this.end = note.getEndAsMillis(ticksPerMillis);
     this.duration = note.getDurationAsMillis(ticksPerMillis);
@@ -20,10 +29,18 @@ public class DECNote extends Note {
     }
     pianoKey = note.getPitch();
     this.pitch = PitchAnalysis.pianoKeyToToneNumber(pianoKey);
+    this.range = range;
   }
 
-  public DECNote(MIDINote note, double ticksPerMillis, String phone) {
-    this(note, ticksPerMillis);
+  /**
+   * Creates a DECNote with a phone
+   *
+   * @param note MIDINote to create a DECNote from
+   * @param ticksPerMillis ticksPerMillis of the track
+   * @param phone Phone to use for this note
+   */
+  public DECNote(MIDINote note, double ticksPerMillis, NoteRange range, String phone) {
+    this(note, ticksPerMillis, range);
     this.word = phone;
   }
 
@@ -33,11 +50,12 @@ public class DECNote extends Note {
    * @param startTime Time the pause starts
    * @param endTime Time the pause ends
    */
-  public DECNote(long startTime, long endTime) {
+  public DECNote(long startTime, long endTime, NoteRange range) {
     this.start = startTime;
     this.end = endTime;
     this.duration = endTime - startTime;
     this.word = "_";
+    this.range = range;
   }
 
   /**
