@@ -36,7 +36,7 @@ public class PitchAnalysis {
   static {
     pianoKeysAndToneNumber = new HashMap<>();
     if (ROUND_UNDEFINED_TONES) {
-      for (int i = 22; i <= 35; ++i) { // 22 to 35 < 65 Hz
+      for (int i = 0; i <= 35; ++i) { // 1 to 35 < 65 Hz
         pianoKeysAndToneNumber.put(i, 1);
       }
     }

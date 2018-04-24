@@ -1,5 +1,8 @@
 package autodec;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import midifilehandling.MIDIConverter;
 import notes.DECNote;
@@ -23,11 +26,11 @@ public class autoDEC {
   private final static int CONFIG_LOWEST_TONE = 1;
   /* Shift the piano keys of notes to fit in the configured range.
    * Scaling by keys is probably going to make a lot of different notes sound a lot more similar. */
-  private final static boolean SHIFT_PIANO_KEYS = true;
-  /* Highest allowed piano key */
-  private final static int CONFIG_HIGHEST_KEY = 80;
+  private final static boolean SHIFT_PIANO_KEYS = false;
+  /* Highest allowed piano key. DECtalk can't do tones higher than C5, lower to sound less whinny */
+  private final static int CONFIG_HIGHEST_KEY = 51 - 10;
   /* Lowest allowed piano key */
-  private final static int CONFIG_LOWEST_KEY = 10;
+  private final static int CONFIG_LOWEST_KEY = 15; // DECtalk can't do tones lower than C2
   /* NoteRanges to use for separating notes */
   private final static ArrayList<NoteRange> ranges;
 
@@ -70,7 +73,8 @@ public class autoDEC {
     if (inputFilePath.contains(".mid")) {
       String midi120BPMPath = inputFilePath.replace(".mid", "_120BPM.mid");
       try {
-        Files.copy(new File(inputFilePath).toPath(), new File(midi120BPMPath).toPath());
+        Files.copy(new File(inputFilePath).toPath(), new File(midi120BPMPath).toPath(),
+            REPLACE_EXISTING);
       } catch (IOException e) {
         System.err.println("Could not copy file to 120BPM version.");
         e.printStackTrace();
@@ -109,7 +113,7 @@ public class autoDEC {
 
     for (ArrayList<DECNote> track : DECTracks) {
       // Scale notes and add pauses to all tracks
-//      refractorTrack(track);
+//      refractorTrack(track); TODO fix error making low values where they shouldnt be
       addPauses(track);
     }
 
