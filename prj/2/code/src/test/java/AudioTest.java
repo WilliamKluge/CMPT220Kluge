@@ -1,5 +1,5 @@
-import WavFileHandling.WavFile;
-import WavFileHandling.WavFileException;
+import wavfilehandling.WavFile;
+import wavfilehandling.WavFileException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;

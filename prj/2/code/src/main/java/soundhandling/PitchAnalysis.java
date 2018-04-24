@@ -1,4 +1,4 @@
-package SoundHandling;
+package soundhandling;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
@@ -54,7 +54,7 @@ public class PitchAnalysis {
   }
 
   /**
-   * Constructs the SoundHandling.PitchAnalysis class.
+   * Constructs the soundhandling.PitchAnalysis class.
    *
    * This constructs the class and analysis the pitches of the file. After this the class is ready
    * to produce a pitch for any specified time in the file.

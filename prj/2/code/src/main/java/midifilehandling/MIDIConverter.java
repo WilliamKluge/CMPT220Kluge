@@ -1,8 +1,8 @@
-package MIDIFileHandling;
+package midifilehandling;
 
-import Notes.DECNote;
-import Notes.MIDINote;
-import SoundHandling.NoteRange;
+import notes.DECNote;
+import notes.MIDINote;
+import soundhandling.NoteRange;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

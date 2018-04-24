@@ -1,4 +1,4 @@
-package SoundHandling;
+package soundhandling;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

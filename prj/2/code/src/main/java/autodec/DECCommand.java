@@ -1,6 +1,6 @@
 package autodec;
 
-import SoundHandling.NoteRange;
+import soundhandling.NoteRange;
 
 /**
  * Holds the data of a command

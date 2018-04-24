@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import wavetodec.PhoneConversion;
 
 /**
  * Translates CMU phones to DECtalk phones

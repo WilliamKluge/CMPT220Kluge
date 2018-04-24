@@ -1,7 +1,7 @@
-package SoundHandling;
+package soundhandling;
 
-import Notes.DECNote;
-import Notes.MIDINote;
+import notes.DECNote;
+import notes.MIDINote;
 import java.util.ArrayList;
 
 public class NoteRange {

@@ -1,6 +1,6 @@
-package MIDIFileHandling;
+package midifilehandling;
 
-import Notes.MIDINote;
+import notes.MIDINote;
 import java.io.File;
 import java.util.ArrayList;
 import javax.sound.midi.MidiSystem;

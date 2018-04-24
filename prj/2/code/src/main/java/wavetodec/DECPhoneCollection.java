@@ -1,3 +1,5 @@
+package wavetodec;
+
 import edu.cmu.sphinx.util.TimeFrame;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -9,7 +11,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Scanner;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
@@ -24,6 +25,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * playing phones and surrounding phones TODO indicate if there should be a slide or higher/lower
  * pitch to surrounding phones, then move tone numbers to fit the model layed out by the user TODO
  * play parts of the original song, not just phone parts
+ * @deprecated autoDEC does not currently support a WAVE file as input, which is what this class was
+ * made for.
  */
 public class DECPhoneCollection {
 
@@ -64,7 +67,7 @@ public class DECPhoneCollection {
   private String outputFileName;
 
   /**
-   * Constructor for DECPhoneCollection
+   * Constructor for wavetodec.DECPhoneCollection
    */
   public DECPhoneCollection(File sourceFile)
       throws IOException, LineUnavailableException, UnsupportedAudioFileException {

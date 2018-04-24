@@ -1,12 +1,13 @@
-import Notes.MIDINote;
-import SoundHandling.PitchAnalysis;
+import notes.MIDINote;
+import soundhandling.PitchAnalysis;
 import edu.cmu.sphinx.util.TimeFrame;
 import java.io.File;
 
 import java.util.ArrayList;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
-import MIDIFileHandling.*;
+import midifilehandling.*;
+import wavetodec.DECtalkPhone;
 
 /**
  * Shout out to my boi Sami Koivu from this SO page for the base code here:

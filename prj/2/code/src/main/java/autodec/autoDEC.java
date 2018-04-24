@@ -1,8 +1,8 @@
 package autodec;
 
-import MIDIFileHandling.MIDIConverter;
-import Notes.DECNote;
-import SoundHandling.NoteRange;
+import midifilehandling.MIDIConverter;
+import notes.DECNote;
+import soundhandling.NoteRange;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

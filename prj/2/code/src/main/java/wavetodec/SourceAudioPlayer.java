@@ -1,5 +1,8 @@
-import WavFileHandling.WavFile;
-import WavFileHandling.WavFileException;
+package wavetodec;
+
+import wavetodec.DECtalkPhone;
+import wavfilehandling.WavFile;
+import wavfilehandling.WavFileException;
 import edu.cmu.sphinx.util.TimeFrame;
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,7 +75,7 @@ public class SourceAudioPlayer {
   /**
    * Creates a clip from the source audio corresponding to the phone and sets the phone's clip to it
    *
-   * @param dectalkPhone DECtalkPhone to get a time frame to play
+   * @param dectalkPhone wavetodec.DECtalkPhone to get a time frame to play
    */
   public void createPhoneClip(DECtalkPhone dectalkPhone)
       throws LineUnavailableException, IOException {

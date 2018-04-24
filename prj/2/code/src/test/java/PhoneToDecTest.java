@@ -1,4 +1,4 @@
-import SoundHandling.PitchAnalysis;
+import soundhandling.PitchAnalysis;
 import edu.cmu.sphinx.api.Configuration;
 import edu.cmu.sphinx.api.Context;
 import edu.cmu.sphinx.api.SpeechResult;
@@ -14,6 +14,9 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
+import wavetodec.CommandHandler;
+import wavetodec.DECPhoneCollection;
+import wavetodec.DECtalkPhone;
 
 /**
  * A simple example that shows how to transcribe a continuous audio file that has multiple

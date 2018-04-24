@@ -1,14 +1,18 @@
+package wavetodec;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Responsible for interpreting strings as commands to run operations on a DECPhoneCollection.
+ * Responsible for interpreting strings as commands to run operations on a wavetodec.DECPhoneCollection.
  *
  * A UI should still feed commands into here. Just use UI elements to trigger methods that get
- * information and spit strings into here. This exists separately from DECPhoneCollection so that a
- * project can use a DECPhoneCollection without needing to feed it commands through here.
+ * information and spit strings into here. This exists separately from wavetodec.DECPhoneCollection so that a
+ * project can use a wavetodec.DECPhoneCollection without needing to feed it commands through here.
+ * @deprecated Deprecated by association with wavetodec.DECtalkPhone. This class is intended to handle the
+ * data of an object that is no longer supported.
  */
 public class CommandHandler {
 
@@ -16,7 +20,7 @@ public class CommandHandler {
   private interface Command {
 
     /* This method must exist in a command. Each command must override this method and place
-     * necessary argument conversion and the method calls to DECPhoneCollection there */
+     * necessary argument conversion and the method calls to wavetodec.DECPhoneCollection there */
     void runCommand(String[] args);
   }
 
@@ -30,7 +34,7 @@ public class CommandHandler {
   /* If a command was run that requires multiple iterations, it locks all other commands and
    * takes control of the command class */
   private boolean lockCommands;
-  /* Index the queue was at when the CommandHandler was locked (commands after this are new) */
+  /* Index the queue was at when the wavetodec.CommandHandler was locked (commands after this are new) */
   private int queueLockIndex;
   /* Commands that need to be run. (Needed for chained commands, especially after a lock) */
   private ArrayList<String> queuedCommands;
@@ -71,9 +75,9 @@ public class CommandHandler {
       + "\t\ts #x - Shift this tone by x (can be positive or negative)\n";
 
   /**
-   * Creates a CommandHandler
+   * Creates a wavetodec.CommandHandler
    *
-   * @param decPhoneCollection DECPhoneCollection to run operations on
+   * @param decPhoneCollection wavetodec.DECPhoneCollection to run operations on
    */
   public CommandHandler(DECPhoneCollection decPhoneCollection) {
     this.decPhoneCollection = decPhoneCollection;
@@ -194,7 +198,7 @@ public class CommandHandler {
   }
 
   /**
-   * Runs a command on CommandHandler
+   * Runs a command on wavetodec.CommandHandler
    *
    * @param command Syntax of the command to run
    */
@@ -229,7 +233,7 @@ public class CommandHandler {
   }
 
   /*
-   * Unlock this CommandHandler class
+   * Unlock this wavetodec.CommandHandler class
    */
   private void unlock() {
     lockCommands = false;

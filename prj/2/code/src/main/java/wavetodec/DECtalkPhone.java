@@ -1,10 +1,13 @@
+package wavetodec;
+
 import edu.cmu.sphinx.util.TimeFrame;
-import java.sql.Time;
 import java.util.concurrent.TimeUnit;
 import javax.sound.sampled.Clip;
 
 /**
  * Holds information about a DECtalk style phone
+ * @deprecated DECtalk phones are now handled by the DECNote class. This is a much older way of
+ * handling the same information and has more of a focus on user interaction with the data.
  */
 public class DECtalkPhone {
   /** */
@@ -20,7 +23,7 @@ public class DECtalkPhone {
   private final static int MIN_LENGTH = 0;
 
   /**
-   * Creates an instance of DECtalkPhone using the information from phone recognition
+   * Creates an instance of wavetodec.DECtalkPhone using the information from phone recognition
    *
    * @param CMUPhone Pronunciation of a CMU phone
    * @param timeFrame Time frame the phone takes place in
@@ -31,7 +34,7 @@ public class DECtalkPhone {
   }
 
   /**
-   * Creates an instance of DECtalkPhone using the information from phone recognition
+   * Creates an instance of wavetodec.DECtalkPhone using the information from phone recognition
    *
    * @param timeFrame Time frame the phone takes place in
    * @param DECPhone Phone in DECtalk
@@ -42,7 +45,7 @@ public class DECtalkPhone {
   }
 
   /**
-   * Creates an instance of DECtalkPhone with only a time frame, sets the phone to be silence
+   * Creates an instance of wavetodec.DECtalkPhone with only a time frame, sets the phone to be silence
    *
    * @param timeFrame Time frame the phone takes place in
    */
@@ -52,7 +55,7 @@ public class DECtalkPhone {
   }
 
   /**
-   * Creates a DECtalkPhone from information used when reading a save file
+   * Creates a wavetodec.DECtalkPhone from information used when reading a save file
    *
    * @param syntax DECtalk syntax associated with this phone
    */
@@ -93,7 +96,7 @@ public class DECtalkPhone {
   /**
    * Sets this phone's tone number to be equal to another phones tone number
    *
-   * @param dectalkPhone DECtalkPhone to match the tone number of
+   * @param dectalkPhone wavetodec.DECtalkPhone to match the tone number of
    */
   public void matchTone(DECtalkPhone dectalkPhone) {
     this.toneNumber = dectalkPhone.toneNumber;

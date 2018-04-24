@@ -1,7 +1,7 @@
-package Notes;
+package notes;
 
-import SoundHandling.NoteRange;
-import SoundHandling.PitchAnalysis;
+import soundhandling.NoteRange;
+import soundhandling.PitchAnalysis;
 
 /**
  * Holds the data related to a note that can be played be DECtalk.

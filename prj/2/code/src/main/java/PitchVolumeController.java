@@ -1,3 +1,5 @@
+import wavetodec.DECtalkPhone;
+
 /**
  * Handles what the volume should be for various pitches
  * DECtalk changes pitch based on what comes next(?)

@@ -1,4 +1,4 @@
-import SoundHandling.PitchAnalysis;
+import soundhandling.PitchAnalysis;
 import edu.cmu.sphinx.api.Configuration;
 import edu.cmu.sphinx.api.Context;
 import edu.cmu.sphinx.api.SpeechResult;
@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import wavetodec.PhoneConversion;
 
 /**
  * Uses lyrics to find the time of each word, then takes the phones in that time frame and matches/

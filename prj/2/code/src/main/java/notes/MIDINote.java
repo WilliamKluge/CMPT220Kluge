@@ -1,4 +1,4 @@
-package Notes;
+package notes;
 
 public class MIDINote extends Note {
 

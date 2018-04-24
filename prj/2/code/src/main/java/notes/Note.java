@@ -1,6 +1,6 @@
-package Notes;
+package notes;
 
-import SoundHandling.PitchAnalysis;
+import soundhandling.PitchAnalysis;
 
 public abstract class Note {
 
