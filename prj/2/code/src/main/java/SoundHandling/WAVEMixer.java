@@ -6,7 +6,7 @@ import java.io.IOException;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import org.apache.commons.io.FileUtils;
+//import org.apache.commons.io.FileUtils;
 
 /**
  * @author Vincent Caputa
@@ -33,7 +33,7 @@ public class WAVEMixer {
         + fileTwo.getName().substring(0, 11) + " mix.wav";
 
     File resultFile = new File(filePath);
-    FileUtils.writeByteArrayToFile(resultFile, byteBufferC);
+//    FileUtils.writeByteArrayToFile(resultFile, byteBufferC);
 
     return resultFile;
   }

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 
 /**
  * Main class for autodec.autoDEC
- * TODO it seems like some notes are still not lining up, fix this
  */
 public class autoDEC {
 
@@ -24,6 +23,7 @@ public class autoDEC {
   /* NoteRanges to use for separating notes */
   private final static ArrayList<NoteRange> ranges;
 
+  // Adds values to ranges array
   static {
     String[] lowCommands = {"[:np]", "[:nh]"};
     ranges = new ArrayList<>();
@@ -40,97 +40,118 @@ public class autoDEC {
     }
   }
 
+  /**
+   * Main method for autoDEC program
+   *
+   * @param args Expected argument is a path to a file to convert. Currently only MIDI files are
+   * supported.
+   */
   public static void main(String[] args) {
 
     if (args.length == 0) {
+      // If there were no arguments
       throw new IllegalArgumentException("No filepath was given");
     }
-
+    /* Path of the target file */
     String inputFilePath = args[0];
-
-    ArrayList<ArrayList<DECNote>> DECTracks = new ArrayList<>();
+    /* Tracks of notes separated in a format that is playable by DECtalk */
+    ArrayList<ArrayList<DECNote>> DECTracks;
+    /* List of commands to be fed to DECtalk */
+    ArrayList<DECCommand> commandList;
 
     if (inputFilePath.contains(".mid")) {
+      // Create DECtalk-style tracks from a MIDI file TODO be more specific
       DECTracks = new MIDIConverter(inputFilePath, ranges).getDECTracks();
+    } else {
+      // The file is of an unsupported file type
+      System.err.println("The provided file was not of an expected format. Please consult the "
+          + "autoDEC's documentation for a list of supported file types.");
+      return;
     }
 
-    // Scale notes and add pauses to all tracks
+    // After this point every operation will be identical for any file type
+
     for (ArrayList<DECNote> track : DECTracks) {
+      // Scale notes and add pauses to all tracks
       refractorTrack(track);
       addPauses(track);
     }
 
-    System.out.println("Generating wav files");
-    ArrayList<String> commandList = new ArrayList<>();
+    System.out.println("Generating DECtalk Commands");
+    commandList = new ArrayList<>();
     for (ArrayList<DECNote> decTrack : DECTracks) {
       int track = -1;
 
-      // Find what track this note is on
+      // Find what track this note is on by checking the phone's until we find an actual sound
       int i = 0;
       while (track == -1) {
-        if (!decTrack.get(i).getPhone().equals("_")) {
-          track = decTrack.get(i).getChannel();
+        // While we haven't found a sound yet
+        DECNote note = decTrack.get(i);
+        if (!note.getPhone().equals("_")) {
+          // If the note is not a pause (because pause's do not have channels)
+          track = note.getChannel();
         }
         ++i;
       }
 
-      // Get the track's note range
-      String noteRange = decTrack.get(0).getRange().toString();
+      // Get the track's first note so that we can get the universal data from it
+      DECNote firstNote = decTrack.get(0);
 
-      // Build the command
-      StringBuilder command = new StringBuilder(noteRange + " "
-          + String.format("%03d", decTrack.get(0).getChannel()));
-      command.append(decTrack.get(0).getVoiceCommand());
-      command.append("[");
+      DECCommand decCommand = new DECCommand(firstNote.getRange(), firstNote.getChannel(),
+          firstNote.getVoiceCommand());
+
       for (DECNote phone : decTrack) {
-        command.append(phone.toString());
+        // For every phone in the DECtrack
+        decCommand.append(phone.toString());
       }
-      command.append("]");
 
-      commandList.add(command.toString());
+      commandList.add(decCommand);
 
       if (PRINT_DEC) {
-        // Prints the DECtalk command if the program is configured to do so
-        System.out.println(command.toString());
+        // Prints the DECtalk command
+        System.out.println(decCommand.toString());
       }
     }
 
     ///// WAVE file output. Requires a Windows OS (I know, ew) and DECtalk's speak.exe /////
-
-    if (false/*!System.getProperty("os.name").contains("win")*/) {
-      System.out.println("DECtalk is not compatible with any non-windows system. Cannot output"
+    if (!System.getProperty("os.name").contains("win")) {
+      // If the OS is not windows
+      System.out.println("DECtalk is not compatible with any non-windows system. Cannot output "
           + "WAVE files.");
       return;
     }
 
     System.out.println("Deleting generated files from previous iteration");
     File[] files = new File("dectalk\\generated").listFiles();
-    if(files!=null) { //some JVMs return null for empty dirs
-      for(File f: files) {
+    if (files != null) { //some JVMs return null for empty dirs
+      for (File f : files) {
+        // For every file in the generation directory
         f.delete();
       }
     }
 
+    System.out.println("Generating wav files");
+
     // Make sure the executable file exists
     File exe = new File("dectalk\\say.exe");
     if (!exe.exists()) {
-      System.out.println("Exe doesn't exist, cannot output WAVE files without speak.exe");
+      System.err.println("Exe doesn't exist, cannot output WAVE files without speak.exe");
       return;
     }
 
     System.out.println("Exporting WAVE files ");
-    for (String command : commandList) {
-      String fileName = command.substring(0, 11) + ".wav";
+    for (DECCommand command : commandList) {
+      // Create a say.exe process to output a WAVE file of the DECtalk
       ProcessBuilder pb = new ProcessBuilder("dectalk\\say.exe",
-          "-w", "generated\\" + fileName,
-          "-pre",
-          "\"[:phoneme on]\"",
-          command.substring(11)); // Note range specifiers are characters 0 through 6, channel too
+          "-w", "generated\\" + command.createFileName(),
+          "-pre", "\"[:phoneme on]\"",
+          command.getCommand());
       pb.directory(new File("dectalk\\"));
+
       try {
         pb.start();
       } catch (IOException e) {
-        System.err.println("Could not start say.exe");
+        System.err.println("Could not run say.exe");
         e.printStackTrace();
       }
     }
