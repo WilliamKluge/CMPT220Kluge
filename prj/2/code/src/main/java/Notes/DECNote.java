@@ -3,6 +3,9 @@ package Notes;
 import SoundHandling.NoteRange;
 import SoundHandling.PitchAnalysis;
 
+/**
+ * Holds the data related to a note that can be played be DECtalk.
+ */
 public class DECNote extends Note {
 
   /* Minimum length a DECNote is allowed to be in milliseconds */
@@ -49,6 +52,7 @@ public class DECNote extends Note {
    *
    * @param startTime Time the pause starts
    * @param endTime Time the pause ends
+   * @param range NoteRange associated with this pause
    */
   public DECNote(long startTime, long endTime, NoteRange range) {
     this.start = startTime;
@@ -96,19 +100,40 @@ public class DECNote extends Note {
     return duration;
   }
 
+  /**
+   * @return Piano key associated with this note
+   */
   public int getPianoKey() {
     return pianoKey;
   }
 
+  /**
+   * Sets the piano key to a new value and updates the DECtalk tone accordingly
+   * @param pianoKey New key to use
+   */
+  public void setPianoKey(int pianoKey) {
+    this.pianoKey = pianoKey;
+    pitch = PitchAnalysis.pianoKeyToToneNumber(pianoKey);
+  }
+
+  /**
+   * @return DECtalk voice command associated with this note
+   */
   public String getVoiceCommand() {
     int index = channel % range.getVoiceCommands().length;
     return range.getVoiceCommands()[index];
   }
 
+  /**
+   * @return NoteRange associated with this note
+   */
   public NoteRange getRange() {
     return range;
   }
 
+  /**
+   * @return Data of this note formatted as a DECtalk phoneme command
+   */
   @Override
   public String toString() {
     StringBuilder DECformat = new StringBuilder(word);

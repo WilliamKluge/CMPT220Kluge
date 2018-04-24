@@ -20,6 +20,13 @@ public class autoDEC {
   private final static int CONFIG_HIGHEST_TONE = 37;
   /* Lowest tone that the program will allow usage of */
   private final static int CONFIG_LOWEST_TONE = 1;
+  /* Shift the piano keys of notes to fit in the configured range.
+   * Scaling by keys is probably going to make a lot of different notes sound a lot more similar. */
+  private final static boolean SHIFT_PIANO_KEYS = true;
+  /* Highest allowed piano key */
+  private final static int CONFIG_HIGHEST_KEY = 80;
+  /* Lowest allowed piano key */
+  private final static int CONFIG_LOWEST_KEY = 10;
   /* NoteRanges to use for separating notes */
   private final static ArrayList<NoteRange> ranges;
 
@@ -71,9 +78,14 @@ public class autoDEC {
 
     // After this point every operation will be identical for any file type
 
+    if (SHIFT_PIANO_KEYS) {
+      // If the program is configured to fit all piano keys into a range
+      shiftPianoKeys(DECTracks);
+    }
+
     for (ArrayList<DECNote> track : DECTracks) {
       // Scale notes and add pauses to all tracks
-      refractorTrack(track);
+//      refractorTrack(track);
       addPauses(track);
     }
 
@@ -123,7 +135,7 @@ public class autoDEC {
 
     System.out.println("Deleting generated files from previous iteration");
     File[] files = new File("dectalk\\generated").listFiles();
-    if (files != null) { //some JVMs return null for empty dirs
+    if (files != null) {
       for (File f : files) {
         // For every file in the generation directory
         f.delete();
@@ -216,27 +228,61 @@ public class autoDEC {
     }
   }
 
-  /**
+  /*
+   * Shifts the piano keys of the given DECTrack to fit within the configured range
+   *
+   * @param DECTrack Track to shift keys on
+   *
+   * Probably could squish this and refractorTrack into one method
+   */
+  private static void shiftPianoKeys(ArrayList<ArrayList<DECNote>> DECTracks) {
+    int highestKey = -1; // Start at non-existent piano key (anything is higher)
+    int lowestKey = 109; // Start at 1 above max keys on piano (all is lower)
+
+    for (ArrayList<DECNote> DECTrack : DECTracks) {
+      NoteRange range = new NoteRange(109, -1, "");
+
+      range.updateRange(DECTrack, true); // Update the track using the piano key
+
+      if (range.getLowestNote() < lowestKey) {
+        lowestKey = range.getLowestNote();
+      }
+
+      if (range.getHighestNote() > highestKey) {
+        highestKey = range.getHighestNote();
+      }
+    }
+
+    if (highestKey > CONFIG_HIGHEST_KEY || lowestKey < CONFIG_LOWEST_KEY) {
+      // If something needs to be shifted
+      for (ArrayList<DECNote> DECTrack : DECTracks) {
+        // Iterate through tracks
+        for (DECNote note : DECTrack) {
+          // Iterate through notes
+          int scaledNote = scaleNote(CONFIG_HIGHEST_KEY, CONFIG_LOWEST_KEY,
+              note.getPianoKey(), lowestKey, highestKey);
+          note.setPianoKey(scaledNote);
+        }
+      }
+    }
+  }
+
+  /*
    * Adjusts notes so that the highest does not exceed 37 (highest tone in DECtalk)
    *
    * @param DECTrack Track to adjust notes on
    */
   private static void refractorTrack(ArrayList<DECNote> DECTrack) {
-    int highestTone = CONFIG_LOWEST_TONE - 1; // Start at 1 below min DECtalk tone
-    int lowestTone = CONFIG_HIGHEST_TONE + 1; // Start at 1 above max DECtalk tone
+    NoteRange range = new NoteRange(CONFIG_HIGHEST_TONE + 1, CONFIG_LOWEST_TONE - 1, "");
 
-    for (DECNote note : DECTrack) {
-      if (note.getPitch() > highestTone) {
-        highestTone = note.getPitch();
-      }
-      if (note.getPitch() < lowestTone) {
-        lowestTone = note.getPitch();
-      }
-    }
+    range.updateRange(DECTrack, false); // Update the track using the note's tone number
 
-    if (highestTone > CONFIG_HIGHEST_TONE || lowestTone < CONFIG_LOWEST_TONE) {
+    if (range.getHighestNote() > CONFIG_HIGHEST_TONE
+        || range.getLowestNote() < CONFIG_LOWEST_TONE) {
+      // If the range of the track is outside of the configured amount
       for (DECNote note : DECTrack) {
-        int scaledNote = scaleNote(note.getPitch(), lowestTone, highestTone);
+        int scaledNote = scaleNote(CONFIG_HIGHEST_TONE, CONFIG_LOWEST_TONE,
+            note.getPitch(), range.getLowestNote(), range.getLowestNote());
         note.setPitch(scaledNote);
       }
     }
@@ -251,9 +297,12 @@ public class autoDEC {
    * @param trackMax Maximum value of the track
    * @return x scaled to be within 1 to 37 and still in its place of the track
    */
-  private static int scaleNote(int x, int trackMin, int trackMax) {
-    return (int) ((CONFIG_HIGHEST_TONE - CONFIG_LOWEST_TONE * 1.0) * (x - trackMin)
-        / (trackMax - trackMin) + 1);
+  private static int scaleNote(int highest, int lowest, int x, int trackMin, int trackMax) {
+//    int scaled = (int) ((highest - lowest * 1.0) * (x - trackMin)
+//        / (trackMax - trackMin) + 1);
+    double scaled = (x * 1.0 - trackMin) / (trackMax - trackMin);
+    scaled = Math.ceil(scaled * (highest - lowest));
+    return (int) scaled;
   }
 
 }

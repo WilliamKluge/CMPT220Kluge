@@ -98,6 +98,12 @@ public class NoteRange {
     return range.fitsInRange(note.getPitch());
   }
 
+  /**
+   * Calculates if a given pitch is within the range of this object
+   *
+   * @param pitch Pitch to check
+   * @return If the pitch fits in this range
+   */
   private boolean fitsInRange(int pitch) {
     boolean fits = false;
 
@@ -108,10 +114,36 @@ public class NoteRange {
     return fits;
   }
 
+  /**
+   * @return DECtalk voice commands associated with this range
+   */
   public String[] getVoiceCommands() {
     return voiceCommands;
   }
 
+  public void updateRange(ArrayList<DECNote> DECTrack, boolean useKeys) {
+    for (DECNote note : DECTrack) {
+      int notePitch = useKeys ? note.getPianoKey() : note.getPitch();
+      if (notePitch > highestNote) {
+        highestNote = notePitch;
+      }
+      if (notePitch < lowestNote) {
+        lowestNote = notePitch;
+      }
+    }
+  }
+
+  public int getHighestNote() {
+    return highestNote;
+  }
+
+  public int getLowestNote() {
+    return lowestNote;
+  }
+
+  /**
+   * @return The range of notes in this range formatted in a constant way
+   */
   @Override
   public String toString() {
     return String.format("%03d", lowestNote) + " " + String.format("%03d", highestNote);
