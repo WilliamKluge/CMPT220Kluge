@@ -23,7 +23,8 @@ public class MIDIConverter {
   /* NoteRanges for converting MIDIs mapped to the number of times that range has been used */
   private Map<NoteRange, Integer> rangeMap;
   private ArrayList<NoteRange> ranges;
-  private int BPM;
+  /** BPM to use for all MIDI files. Files must use this at all times for the program to work. */
+  public final static int BPM = 120;
 
   /**
    *
@@ -35,7 +36,6 @@ public class MIDIConverter {
     midiLoader = new MidiLoader(filePath);
 
     int PPQ = midiLoader.mySeq.getResolution();
-    BPM = 120; // This can change a lot...time to calculate it!
     int ticksPerMinute = BPM * PPQ;
     ticksPerMillis = ticksPerMinute * (1.0 / 60000);
 

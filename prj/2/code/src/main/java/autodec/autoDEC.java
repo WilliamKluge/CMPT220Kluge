@@ -1,5 +1,6 @@
 package autodec;
 
+import java.nio.file.Files;
 import midifilehandling.MIDIConverter;
 import notes.DECNote;
 import soundhandling.NoteRange;
@@ -67,8 +68,31 @@ public class autoDEC {
     ArrayList<DECCommand> commandList;
 
     if (inputFilePath.contains(".mid")) {
+      String midi120BPMPath = inputFilePath.replace(".mid", "_120BPM.mid");
+      try {
+        Files.copy(new File(inputFilePath).toPath(), new File(midi120BPMPath).toPath());
+      } catch (IOException e) {
+        System.err.println("Could not copy file to 120BPM version.");
+        e.printStackTrace();
+        return;
+      }
+
       // Create DECtalk-style tracks from a MIDI file TODO be more specific
-      DECTracks = new MIDIConverter(inputFilePath, ranges).getDECTracks();
+      ProcessBuilder setMIDItempo = new ProcessBuilder("java", "-jar",
+          "libs/MidiTempoConverter.jar", midi120BPMPath, String.valueOf(MIDIConverter.BPM));
+
+      try {
+        Process p = setMIDItempo.start();
+        p.waitFor();
+      } catch (IOException e) {
+        System.err.println("Could not run say.exe");
+        e.printStackTrace();
+      } catch (InterruptedException e) {
+        System.err.println("Error waiting for the MIDI tempo conversion process to finish");
+        e.printStackTrace();
+      }
+
+      DECTracks = new MIDIConverter(midi120BPMPath, ranges).getDECTracks();
     } else {
       // The file is of an unsupported file type
       System.err.println("The provided file was not of an expected format. Please consult the "

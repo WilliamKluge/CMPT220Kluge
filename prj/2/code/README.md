@@ -14,6 +14,9 @@ which is included with Gradle)
 * WavFile - This source is bundled into the code of this program. Nothing needs to be put in gradle
 or installed for this to work. I just wanted to note that this is not my code, shoutout to my boi 
 A.Greensted for making my life a hell of a lot easier.
+* MIDI-Tempo-Converter - https://github.com/danph/Midi-Tempo-Converter The jar needs to be in the
+libs/ folder relative to the running directory of the program. This is used to convert all MIDI 
+files to be the same tempo so that note duration calculations are easier.
 
 ## How to use (TODO expand this section)
 * For help figuring out DECtalk phones see 
