@@ -121,6 +121,11 @@ public class NoteRange {
     return voiceCommands;
   }
 
+  /**
+   * Update the highest and lowest notes of this range using information from a track of DECNotes.
+   * @param DECTrack Track to update data
+   * @param useKeys If the method should use piano keys for the note's value instead of it's pitch.
+   */
   public void updateRange(ArrayList<DECNote> DECTrack, boolean useKeys) {
     for (DECNote note : DECTrack) {
       int notePitch = useKeys ? note.getPianoKey() : note.getPitch();
@@ -133,10 +138,16 @@ public class NoteRange {
     }
   }
 
+  /**
+   * @return Highest note in this range
+   */
   public int getHighestNote() {
     return highestNote;
   }
 
+  /**
+   * @return Lowest note in this range
+   */
   public int getLowestNote() {
     return lowestNote;
   }

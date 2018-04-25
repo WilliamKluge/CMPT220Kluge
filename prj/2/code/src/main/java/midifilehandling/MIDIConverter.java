@@ -23,11 +23,12 @@ public class MIDIConverter {
   /* NoteRanges for converting MIDIs mapped to the number of times that range has been used */
   private Map<NoteRange, Integer> rangeMap;
   private ArrayList<NoteRange> ranges;
-  /** BPM to use for all MIDI files. Files must use this at all times for the program to work. */
+  /**
+   * BPM to use for all MIDI files. Files must use this at all times for the program to work.
+   */
   public final static int BPM = 120;
 
   /**
-   *
    * @param filePath Path to the MIDI file to convert
    * @param ranges NoteRanges to use for separating notes
    */
@@ -46,9 +47,9 @@ public class MIDIConverter {
   }
 
   /**
-   * All DEC tracks made from the MIDI file this class was given. DEC tracks do not have
-   * multiple notes that play at the same time and they do not allowed notes in different octaves
-   * unless they are within the specified range.
+   * All DEC tracks made from the MIDI file this class was given. DEC tracks do not have multiple
+   * notes that play at the same time and they do not allowed notes in different octaves unless they
+   * are within the specified range.
    *
    * @return All DEC tracks made from the MIDI file this class was given.
    */
@@ -81,7 +82,14 @@ public class MIDIConverter {
 
   }
 
-  private<T> long sumOfTracks(ArrayList<ArrayList<T>> tracks) {
+  /**
+   * Provides a sum of all the elements in the given multidimensional array
+   *
+   * @param tracks Tracks to sum
+   * @param <T> Any type of multidimensional arraylist can be summed
+   * @return The sum of all elements in tracks
+   */
+  private <T> long sumOfTracks(ArrayList<ArrayList<T>> tracks) {
     long sum = 0;
     for (ArrayList<T> track : tracks) {
       sum += track.size();
@@ -93,7 +101,6 @@ public class MIDIConverter {
    * Creates a track of DECNotes that belong together (no overlapping, no large jumps in pitch).
    * Whenever this adds a note to the track it creates, that note get removed from MIDITrack. When
    * all notes have been added, the size of MIDITrack will be 0.
-   *
    *
    * @param MIDITrack Track of DECNotes in the format of a MIDITrack (noOverlap allowed) to create
    * out of.

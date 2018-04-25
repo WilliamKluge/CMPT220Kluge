@@ -178,26 +178,44 @@ public abstract class Note {
     this.end = end;
   }
 
+  /**
+   * @return Channel of this note
+   */
   public int getChannel() {
     return channel;
   }
 
+  /**
+   * @param channel New value to use as this note's channel
+   */
   public void setChannel(int channel) {
     this.channel = channel;
   }
 
+  /**
+   * @return Velocity of this note. Velocity comes from MIDI files.
+   */
   public int getVelocity() {
     return velocity;
   }
 
+  /**
+   * @param velocity New value to use for this note's velocity.
+   */
   public void setVelocity(int velocity) {
     this.velocity = velocity;
   }
 
+  /**
+   * @return Pitch of this note
+   */
   public int getPitch() {
     return pitch;
   }
 
+  /**
+   * @param pitch New value to use for this note's pitch
+   */
   public void setPitch(int pitch) {
     this.pitch = pitch;
   }
@@ -212,6 +230,9 @@ public abstract class Note {
     return word;
   }
 
+  /**
+   * @return Information on this note's start, end, pitch, and channel
+   */
   @Override
   public String toString() {
     return "{start: " + start + " end: " + end + " pitch: " + pitch + " channel: " + channel + "}";

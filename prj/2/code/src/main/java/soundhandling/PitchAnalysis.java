@@ -17,22 +17,29 @@ import java.util.function.Predicate;
 import javafx.util.Pair;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+/**
+ * Responsible for autoDEC's handling of pitches for everything from detection in a WAVE file to
+ * determining the DECtalk tone number of a piano key.
+ */
 public class PitchAnalysis {
-
+  /* Pitches at various times */
   private ArrayList<Pair<Double, Float>> pitches;
-
+  /* Size of the buffer to use when reading a WAVE file */
   private static final int BUFFER_SIZE = 2048;
+  /* Sample rate of the WAVE file being analyzed */
   private static final int SAMPLE_RATE = 16000;
+  /* If tone's not covered by DECtalk should be rounded to the nearest tone or converted to Hz */
   private static final boolean ROUND_UNDEFINED_TONES = true;
-
+  /* Really terrible way of mapping a value in Hz to a tone number */
   private static int[][] toneNumbersAndHz = new int[][]{
       {1, 65}, {2, 69}, {3, 73}, {4, 77}, {5, 82}, {6, 87}, {7, 92}, {8, 98}, {9, 103},
       {10, 110}, {11, 116}, {12, 123}, {13, 130}, {14, 138}, {15, 146}, {16, 155}, {17, 164},
       {18, 174}, {19, 185}, {20, 196}, {21, 208}, {22, 220}, {23, 233}, {24, 247}, {25, 261},
       {26, 277}, {27, 293}, {28, 311}, {29, 329}, {30, 348}, {31, 370}, {32, 392}, {33, 415},
       {34, 440}, {35, 466}, {36, 494}, {37, 523}}; // TODO make into map
-
+  /* Maps a piano key to a DECtalk tone number to associate with it */
   private static Map<Integer, Integer> pianoKeysAndToneNumber;
+
   static {
     pianoKeysAndToneNumber = new HashMap<>();
     if (ROUND_UNDEFINED_TONES) {
@@ -82,7 +89,7 @@ public class PitchAnalysis {
     adp.run();
 
     // Remove pitches equal to -1, cause they lying TODO update other methods now that this happens
-    Predicate<Pair<Double, Float>> pitchPredicate = p-> p.getValue() == -1;
+    Predicate<Pair<Double, Float>> pitchPredicate = p -> p.getValue() == -1;
     pitches.removeIf(pitchPredicate);
 
   }
@@ -101,6 +108,12 @@ public class PitchAnalysis {
     return pitchToToneNumber(pitch);
   }
 
+  /**
+   * Converts a pitch to a tone number
+   *
+   * @param pitch Pitch to convert
+   * @return DECtalk tone number that will play as the pitch
+   */
   public static int pitchToToneNumber(float pitch) {
     int closestToneNumberIndex = 0;
     float bestToneDifference = Math.abs(toneNumbersAndHz[0][1] - pitch);
@@ -118,6 +131,14 @@ public class PitchAnalysis {
     return toneNumbersAndHz[closestToneNumberIndex][0];
   }
 
+  /**
+   * Converts a piano key to a DECtalk tone number or its value in Hz if it does not exist in the
+   * range that DECtalk can play and, if the program is configured to, will then give the value as
+   * Hz so DECtalk can play it at it's original value.
+   *
+   * @param key Piano key to convert
+   * @return DECtalk tone (or Hz if out of range and program is allowed to)
+   */
   public static int pianoKeyToToneNumber(int key) {
     if (pianoKeysAndToneNumber.containsKey(key)) {
       return pianoKeysAndToneNumber.get(key);
@@ -126,6 +147,12 @@ public class PitchAnalysis {
     }
   }
 
+  /**
+   * Converts a piano key to the Hz it plays TODO fix
+   *
+   * @param key Key to convert
+   * @return Hz value associated with the given piano key
+   */
   public static float keyToHz(int key) {
     float hz = (float) (2 * ((key - 49.0) / 12.0) * 440.0);
     return hz;
@@ -177,7 +204,6 @@ public class PitchAnalysis {
     }
 
     return pitchSum / addedNumbers;
-
   }
 
 }

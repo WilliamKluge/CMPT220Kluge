@@ -2,7 +2,6 @@ package autodec;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import midifilehandling.MIDIConverter;
 import notes.DECNote;
@@ -113,7 +112,7 @@ public class autoDEC {
 
     for (ArrayList<DECNote> track : DECTracks) {
       // Scale notes and add pauses to all tracks
-//      refractorTrack(track); TODO fix error making low values where they shouldnt be
+//      refractorTrack(track);
       addPauses(track);
     }
 
@@ -196,7 +195,8 @@ public class autoDEC {
       }
     }
 
-//    File outputFile = new File("dectalk\\generated");
+// TODO get file merging working
+// File outputFile = new File("dectalk\\generated");
 //    for (int i = 0; i < files.length - 1; ++i, files = outputFile.listFiles()) {
 //      // If the first note identifier is the same for both files
 //      File firstFile = files[i];
