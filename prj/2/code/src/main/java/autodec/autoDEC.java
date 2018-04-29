@@ -9,6 +9,7 @@ import soundhandling.NoteRange;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import soundhandling.WAVEMixer;
 
 /**
  * Main class for autodec.autoDEC
@@ -27,9 +28,9 @@ public class autoDEC {
    * Scaling by keys is probably going to make a lot of different notes sound a lot more similar. */
   private final static boolean SHIFT_PIANO_KEYS = false;
   /* Highest allowed piano key. DECtalk can't do tones higher than C5, lower to sound less whinny */
-  private final static int CONFIG_HIGHEST_KEY = 51 - 10;
+  private final static int CONFIG_HIGHEST_KEY = 51 - 15;
   /* Lowest allowed piano key */
-  private final static int CONFIG_LOWEST_KEY = 15; // DECtalk can't do tones lower than C2
+  private final static int CONFIG_LOWEST_KEY = 20; // DECtalk can't do tones lower than C2
   /* NoteRanges to use for separating notes */
   private final static ArrayList<NoteRange> ranges;
 
@@ -43,7 +44,7 @@ public class autoDEC {
       ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax, lowCommands));
     }
     autogenMax = 108;
-    String[] highCommands = {"[:nu]", "[:nb]", "[:nk]"};
+    String[] highCommands = {/*"[:nu]", "[:nb]", */"[:nk]"};
     for (int i = 6; i < autogenMax; i += 5) {
       ranges.add(NoteRange.createWithSpecificRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax,
           5, 9, highCommands));
@@ -112,7 +113,7 @@ public class autoDEC {
 
     for (ArrayList<DECNote> track : DECTracks) {
       // Scale notes and add pauses to all tracks
-//      refractorTrack(track);
+      refractorTrack(track);
       addPauses(track);
     }
 
@@ -153,7 +154,7 @@ public class autoDEC {
     }
 
     ///// WAVE file output. Requires a Windows OS (I know, ew) and DECtalk's speak.exe /////
-    if (!System.getProperty("os.name").contains("win")) {
+    if (!System.getProperty("os.name").toLowerCase().contains("win")) {
       // If the OS is not windows
       System.out.println("DECtalk is not compatible with any non-windows system. Cannot output "
           + "WAVE files.");
@@ -196,7 +197,7 @@ public class autoDEC {
     }
 
 // TODO get file merging working
-// File outputFile = new File("dectalk\\generated");
+//    File outputFile = new File("dectalk\\generated");
 //    for (int i = 0; i < files.length - 1; ++i, files = outputFile.listFiles()) {
 //      // If the first note identifier is the same for both files
 //      File firstFile = files[i];

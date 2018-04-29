@@ -26,7 +26,9 @@ public class MIDIConverter {
   /**
    * BPM to use for all MIDI files. Files must use this at all times for the program to work.
    */
-  public final static int BPM = 120;
+  public final static int BPM = 110;
+
+
 
   /**
    * @param filePath Path to the MIDI file to convert
