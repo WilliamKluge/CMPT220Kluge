@@ -13,7 +13,7 @@ public class driver_lab139 {
    * @param args This program does not utilize arguments
    */
   public static void main(String[] args) {
-    Circle circleOne = new Circle(5);
+    Circle circleOne = new Circle(10);
     Circle circleTwo = new Circle(10);
 
     System.out.println("Comparison of Circles: " + circleOne.compareTo(circleTwo));
