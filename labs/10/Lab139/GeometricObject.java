@@ -1,4 +1,4 @@
-//package Lab139;
+package Lab139;
 
 public abstract class GeometricObject {
 

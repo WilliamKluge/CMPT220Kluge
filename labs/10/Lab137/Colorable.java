@@ -1,4 +1,4 @@
-//package Lab137;
+package Lab137;
 
 /**
  * Defines how to color an object
