@@ -21,11 +21,13 @@ public class driver_lab1811 {
     System.out.format("The sum of digits is %d", sumDigits(number));
   }
 
-  private static int sumDigits(Integer number) {
+  private static int sumDigits(int number) {
     int sum = 0;
 
-    for (Character c : number.toString().toCharArray()) {
-      sum += Character.getNumericValue(c);
+    sum += number % 10;
+
+    if (number > 10) {
+      sum += sumDigits(number / 10);
     }
 
     return sum;
