@@ -16,6 +16,8 @@ public class NoteRange {
   private int rangeBufferUp;
   /* Amount of notes (in terms of piano keys) that this range allows below its lowestNote */
   private int rangeBufferDown;
+  /* Amount that the volume should be shifted for files with audio in this range */
+  private float volumeShift;
 
   // Add method for DEC tone scaling here? that would scale by a range, which would be :ok_hand:
   // If scaling was done here I could use one object for all notes within one range, change one
@@ -28,11 +30,13 @@ public class NoteRange {
    * @param voiceCommands DECtalk voice commands that can be used by this class
    * @param lowestNote Lowest note (in terms of piano keys) that is allowed in this range
    * @param highestNote Highest note (in terms of piano keys) that is allowed in this range
+   * @param volumeShift Amount of decibels to shift the volume by
    */
-  public NoteRange(int lowestNote, int highestNote, String... voiceCommands) {
+  public NoteRange(int lowestNote, int highestNote, float volumeShift, String... voiceCommands) {
     this.voiceCommands = voiceCommands;
     this.highestNote = highestNote;
     this.lowestNote = lowestNote;
+    this.volumeShift = volumeShift;
     rangeBufferUp = 5; // Default values for range buffer
     rangeBufferDown = 5;
   }
@@ -45,11 +49,13 @@ public class NoteRange {
    * @param lowestNote Lowest note (in terms of piano keys) that is allowed in this range
    * @param rangeBufferUp Amount of keys (piano) allowed above the highest note
    * @param rangeBufferDown Amount of keys (piano) allowed below the lowest note
+   * @param volumeShift Amount of decibels to shift the volume by
    * @return A NoteRange with the specified qualities
    */
   public static NoteRange createWithSpecificRange(int highestNote,
-      int lowestNote, int rangeBufferUp, int rangeBufferDown, String... voiceCommands) {
-    NoteRange range = new NoteRange(highestNote, lowestNote, voiceCommands);
+      int lowestNote, int rangeBufferUp, int rangeBufferDown, float volumeShift,
+      String... voiceCommands) {
+    NoteRange range = new NoteRange(highestNote, lowestNote, volumeShift, voiceCommands);
     range.rangeBufferUp = rangeBufferUp;
     range.rangeBufferDown = rangeBufferDown;
     return range;
@@ -150,6 +156,13 @@ public class NoteRange {
    */
   public int getLowestNote() {
     return lowestNote;
+  }
+
+  /**
+   * @return Amount of decibles to shift the volume of clips in this range by
+   */
+  public float getVolumeShift() {
+    return volumeShift;
   }
 
   /**

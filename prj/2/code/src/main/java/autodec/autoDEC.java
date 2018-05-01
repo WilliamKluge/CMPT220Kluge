@@ -3,6 +3,13 @@ package autodec;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.nio.file.Files;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import midifilehandling.MIDIConverter;
 import notes.DECNote;
 import soundhandling.NoteRange;
@@ -12,7 +19,7 @@ import java.util.ArrayList;
 import soundhandling.WAVEMixer;
 
 /**
- * Main class for autodec.autoDEC
+ * Main class for autoDEC
  */
 public class autoDEC {
 
@@ -38,16 +45,16 @@ public class autoDEC {
   static {
     String[] lowCommands = {"[:np]", "[:nh]"};
     ranges = new ArrayList<>();
-    ranges.add(new NoteRange(1, 5, lowCommands));
+    ranges.add(new NoteRange(1, 5, -10f, lowCommands));
     int autogenMax = 60;
     for (int i = 6; i < autogenMax; i += 5) {
-      ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax, lowCommands));
+      ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax, -10f, lowCommands));
     }
     autogenMax = 108;
     String[] highCommands = {/*"[:nu]", "[:nb]", */"[:nk]"};
     for (int i = 6; i < autogenMax; i += 5) {
       ranges.add(NoteRange.createWithSpecificRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax,
-          5, 9, highCommands));
+          5, 9, 10f, highCommands));
     }
   }
 
@@ -189,9 +196,19 @@ public class autoDEC {
       pb.directory(new File("dectalk\\"));
 
       try {
-        pb.start();
+        Process p = pb.start();
+        p.waitFor();
       } catch (IOException e) {
         System.err.println("Could not run say.exe");
+        e.printStackTrace();
+      } catch (InterruptedException e) {
+        System.err.println("Error waiting for process to finish");
+        e.printStackTrace();
+      }
+
+      try {
+        lowerVolume("generated\\" + command.createFileName());
+      } catch (IOException | LineUnavailableException e) {
         e.printStackTrace();
       }
     }
@@ -269,7 +286,7 @@ public class autoDEC {
     int lowestKey = 109; // Start at 1 above max keys on piano (all is lower)
 
     for (ArrayList<DECNote> DECTrack : DECTracks) {
-      NoteRange range = new NoteRange(109, -1, "");
+      NoteRange range = new NoteRange(109, -1, 0f, "");
 
       range.updateRange(DECTrack, true); // Update the track using the piano key
 
@@ -302,7 +319,7 @@ public class autoDEC {
    * @param DECTrack Track to adjust notes on
    */
   private static void refractorTrack(ArrayList<DECNote> DECTrack) {
-    NoteRange range = new NoteRange(CONFIG_HIGHEST_TONE + 1, CONFIG_LOWEST_TONE - 1, "");
+    NoteRange range = new NoteRange(CONFIG_HIGHEST_TONE + 1, CONFIG_LOWEST_TONE - 1, 0f, "");
 
     range.updateRange(DECTrack, false); // Update the track using the note's tone number
 
@@ -332,6 +349,33 @@ public class autoDEC {
     double scaled = (x * 1.0 - trackMin) / (trackMax - trackMin);
     scaled = Math.ceil(scaled * (highest - lowest));
     return (int) scaled;
+  }
+
+  /*
+   * Lowers the volume of the specified file
+   *
+   * @param path Path of the file to lower the volume for
+   * @throws IOException If the audio file can not be read
+   * @throws LineUnavailableException If the audio line cannot be obtained
+   */
+  private static void lowerVolume(String path) throws IOException, LineUnavailableException {
+    AudioInputStream audioInputStream = null;
+    try {
+      audioInputStream = AudioSystem.getAudioInputStream(new File(path));
+    } catch (UnsupportedAudioFileException e) {
+      // This should really never happen, we always give it a WAVE file
+      e.printStackTrace();
+      return;
+    }
+
+    Clip clip = AudioSystem.getClip();
+    clip.open(audioInputStream);
+    FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+    gainControl.setValue(-10.0f); // Reduce volume by 10 decibels.
+    clip.start();
+
+    AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE,
+        new File(path.substring(0, path.length() - 4) + "_controlled.wav"));
   }
 
 }
