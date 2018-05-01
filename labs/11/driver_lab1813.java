@@ -24,7 +24,7 @@ public class driver_lab1813 {
 
   }
 
-  public static int largestInt(int[] arr) {
+  private static int largestInt(int[] arr) {
     int val = arr[0];
     int comp = arr.length > 1 ? largestInt(Arrays.copyOfRange(arr, 1, arr.length)) : arr[0];
 
