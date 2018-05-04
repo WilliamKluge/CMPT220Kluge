@@ -53,6 +53,13 @@ public class DECCommand {
   }
 
   /**
+   * @return Range that this command exists in
+   */
+  public NoteRange getNoteRange() {
+    return noteRange;
+  }
+
+  /**
    * @return All the data in this class as a string
    */
   @Override

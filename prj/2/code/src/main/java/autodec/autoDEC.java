@@ -3,6 +3,7 @@ package autodec;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.nio.file.Files;
+import java.util.Collection;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -16,7 +17,7 @@ import soundhandling.NoteRange;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import soundhandling.WAVEMixer;
+
 
 /**
  * Main class for autoDEC
@@ -187,6 +188,7 @@ public class autoDEC {
     }
 
     System.out.println("Exporting WAVE files ");
+    ArrayList<AudioInputStream> audioInputs = new ArrayList<>();
     for (DECCommand command : commandList) {
       // Create a say.exe process to output a WAVE file of the DECtalk
       ProcessBuilder pb = new ProcessBuilder("dectalk\\say.exe",
@@ -207,11 +209,13 @@ public class autoDEC {
       }
 
       try {
-        lowerVolume("generated\\" + command.createFileName());
-      } catch (IOException | LineUnavailableException e) {
+        audioInputs.add(AudioSystem.getAudioInputStream(new File(lowerVolume(command))));
+      } catch (IOException | LineUnavailableException | UnsupportedAudioFileException e) {
         e.printStackTrace();
       }
     }
+
+    MixingAudioInputStream mixer=new MixingAudioInputStream(audioFormat, list);
 
 // TODO get file merging working
 //    File outputFile = new File("dectalk\\generated");
@@ -357,25 +361,32 @@ public class autoDEC {
    * @param path Path of the file to lower the volume for
    * @throws IOException If the audio file can not be read
    * @throws LineUnavailableException If the audio line cannot be obtained
+   * @return Path to the file that was created
    */
-  private static void lowerVolume(String path) throws IOException, LineUnavailableException {
+  private static String lowerVolume(DECCommand command)
+      throws IOException, LineUnavailableException {
+    String path = "generated\\" + command.createFileName();
+
     AudioInputStream audioInputStream = null;
     try {
       audioInputStream = AudioSystem.getAudioInputStream(new File(path));
     } catch (UnsupportedAudioFileException e) {
       // This should really never happen, we always give it a WAVE file
       e.printStackTrace();
-      return;
+      return "";
     }
 
     Clip clip = AudioSystem.getClip();
     clip.open(audioInputStream);
     FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-    gainControl.setValue(-10.0f); // Reduce volume by 10 decibels.
+    gainControl.setValue(command.getNoteRange().getVolumeShift());
     clip.start();
 
+    String newPath = path.substring(0, path.length() - 4) + "_controlled.wav";
     AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE,
-        new File(path.substring(0, path.length() - 4) + "_controlled.wav"));
+        new File(newPath));
+
+    return newPath;
   }
 
 }
