@@ -11,10 +11,13 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    // Speach to text
     compile group: 'edu.cmu.sphinx', name: 'sphinx4-core', version:'5prealpha-SNAPSHOT'
     compile group: 'edu.cmu.sphinx', name: 'sphinx4-data', version:'5prealpha-SNAPSHOT'
+    // Getting pitch at a specific time of an audio file
     compile files('libs/TarsosDSP-2.4.jar')
     compile group: 'com.googlecode.soundlibs', name: 'basicplayer', version: '3.0.0.0'
+    // For file output
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
 }
