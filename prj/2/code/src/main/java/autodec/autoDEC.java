@@ -2,9 +2,15 @@ package autodec;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
+import com.sun.media.sound.WaveFileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Collection;
 import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -46,16 +52,16 @@ public class autoDEC {
   static {
     String[] lowCommands = {"[:np]", "[:nh]"};
     ranges = new ArrayList<>();
-    ranges.add(new NoteRange(1, 5, -10f, lowCommands));
+    ranges.add(new NoteRange(1, 5, 0.5f, lowCommands));
     int autogenMax = 60;
     for (int i = 6; i < autogenMax; i += 5) {
-      ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax, -10f, lowCommands));
+      ranges.add(new NoteRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax, 0.5f, lowCommands));
     }
     autogenMax = 108;
     String[] highCommands = {/*"[:nu]", "[:nb]", */"[:nk]"};
     for (int i = 6; i < autogenMax; i += 5) {
       ranges.add(NoteRange.createWithSpecificRange(i, i + 4 <= autogenMax ? i + 4 : autogenMax,
-          5, 9, 10f, highCommands));
+          5, 9, 0.5f, highCommands));
     }
   }
 
@@ -80,9 +86,11 @@ public class autoDEC {
 
     if (inputFilePath.contains(".mid")) {
       String midi120BPMPath = inputFilePath.replace(".mid", "_120BPM.mid");
+      File midi120BPM = new File(midi120BPMPath);
       try {
-        Files.copy(new File(inputFilePath).toPath(), new File(midi120BPMPath).toPath(),
-            REPLACE_EXISTING);
+        if (!midi120BPM.exists()) {
+          Files.copy(new File(inputFilePath).toPath(), midi120BPM.toPath(), REPLACE_EXISTING);
+        }
       } catch (IOException e) {
         System.err.println("Could not copy file to 120BPM version.");
         e.printStackTrace();
@@ -208,35 +216,12 @@ public class autoDEC {
         e.printStackTrace();
       }
 
-      try {
-        audioInputs.add(AudioSystem.getAudioInputStream(new File(lowerVolume(command))));
-      } catch (IOException | LineUnavailableException | UnsupportedAudioFileException e) {
-        e.printStackTrace();
-      }
-    }
-
-    MixingAudioInputStream mixer=new MixingAudioInputStream(audioFormat, list);
-
-// TODO get file merging working
-//    File outputFile = new File("dectalk\\generated");
-//    for (int i = 0; i < files.length - 1; ++i, files = outputFile.listFiles()) {
-//      // If the first note identifier is the same for both files
-//      File firstFile = files[i];
-//      File secondFile = files[i + 1];
-//      while (firstFile.getName().substring(0, 3).equals(secondFile.getName().substring(0, 3))) {
-//        try {
-//          firstFile = WAVEMixer.mixWAVEFiles(files[i], files[i + 1]);
-//          System.out.println("Deleting " + files[i].getName() + " and " + secondFile.getName());
-////          files[i].delete(); // files not actually deleting
-////          secondFile.delete();
-////          i -= 2; // Deleted two files
-//        } catch (Exception e) {
-//          e.printStackTrace();
-//        }
-//        ++i;
-//        secondFile = files[++i];
+//      try {
+//        /*audioInputs.add(AudioSystem.getAudioInputStream(new File(*/lowerVolume(command)/*)))*/;
+//      } catch (IOException | LineUnavailableException e) {
+//        e.printStackTrace();
 //      }
-//    }
+    }
   }
 
   /*
@@ -365,7 +350,7 @@ public class autoDEC {
    */
   private static String lowerVolume(DECCommand command)
       throws IOException, LineUnavailableException {
-    String path = "generated\\" + command.createFileName();
+    String path = "dectalk\\generated\\" + command.createFileName();
 
     AudioInputStream audioInputStream = null;
     try {
@@ -379,14 +364,31 @@ public class autoDEC {
     Clip clip = AudioSystem.getClip();
     clip.open(audioInputStream);
     FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-    gainControl.setValue(command.getNoteRange().getVolumeShift());
+    float range = gainControl.getMaximum() - gainControl.getMinimum();
+    float gain = (range * command.getNoteRange().getVolumeShift()) + gainControl.getMinimum();
+    gainControl.setValue(gain);
+//    gainControl.setValue(command.getNoteRange().getVolumeShift());
     clip.start();
 
     String newPath = path.substring(0, path.length() - 4) + "_controlled.wav";
-    AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE,
-        new File(newPath));
 
-    return newPath;
+    File output = new File(path);
+
+//    OutputStream outStream = new FileOutputStream(path);
+
+    // Get the header of the old wave file
+//    byte[] buffer = new byte[44];
+//    InputStream is = new FileInputStream(path);
+//    is.read(buffer);
+//    is.close();
+//
+//    outStream.write(buffer);
+//    outStream.close();
+
+    int response = AudioSystem.write(audioInputStream, Type.WAVE, output);
+    audioInputStream.close();
+
+    return path;
   }
 
 }
