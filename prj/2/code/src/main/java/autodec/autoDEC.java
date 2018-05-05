@@ -2,14 +2,10 @@ package autodec;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-import com.sun.media.sound.WaveFileWriter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collection;
-import javax.sound.sampled.AudioFileFormat;
+import java.util.ArrayList;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -20,9 +16,6 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import midifilehandling.MIDIConverter;
 import notes.DECNote;
 import soundhandling.NoteRange;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 
 
 /**

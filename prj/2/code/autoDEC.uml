@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>autodec.autoDEC</OriginalElement>
+  <nodes>
+    <node x="828.6492504409171" y="3212.0">autodec.DECCommand</node>
+    <node x="273.149250440917" y="1528.0">notes.MIDINote</node>
+    <node x="563.3485449735449" y="3721.0">autodec.autoDEC</node>
+    <node x="75.13139329805972" y="3174.0">midifilehandling.MIDIConverter</node>
+    <node x="508.8159171075837" y="0.0">soundhandling.PitchAnalysis</node>
+    <node x="0.0" y="1873.0">midifilehandling.MidiLoader</node>
+    <node x="661.8992504409171" y="1702.0">notes.DECNote</node>
+    <node x="494.149250440917" y="2391.0">soundhandling.NoteRange</node>
+    <node x="484.56591710758363" y="517.0">notes.Note</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="autodec.autoDEC" target="autodec.DECCommand">
+      <point x="60.333333333333314" y="-290.5" />
+      <point x="895.1818783068783" y="3671.0" />
+      <point x="1079.899250440917" y="3671.0" />
+      <point x="83.75" y="195.5" />
+    </edge>
+    <edge source="autodec.autoDEC" target="midifilehandling.MIDIConverter">
+      <point x="-241.33333333333348" y="-290.5" />
+      <point x="593.5152116402114" y="3701.0" />
+      <point x="232.38139329805972" y="3701.0" />
+      <point x="-157.25" y="233.5" />
+    </edge>
+    <edge source="midifilehandling.MIDIConverter" target="notes.DECNote">
+      <point x="89.85714285714289" y="-233.5" />
+      <point x="479.4885361552026" y="3154.0" />
+      <point x="483.649250440917" y="3154.0" />
+      <point x="483.649250440917" y="2371.0" />
+      <point x="730.8992504409171" y="2371.0" />
+      <point x="-92.0" y="309.5" />
+    </edge>
+    <edge source="midifilehandling.MIDIConverter" target="notes.MIDINote">
+      <point x="-89.85714285714278" y="-233.5" />
+      <point x="299.77425044091694" y="3144.0" />
+      <point x="457.49999999999994" y="3144.0" />
+      <point x="457.49999999999994" y="1682.0" />
+      <point x="443.4825837742504" y="1682.0" />
+      <point x="24.33333333333337" y="62.0" />
+    </edge>
+    <edge source="notes.MIDINote" target="notes.Note">
+      <point x="72.99999999999989" y="-62.0" />
+      <point x="492.1492504409169" y="1508.0" />
+      <point x="624.8159171075836" y="1508.0" />
+      <point x="-46.75" y="480.5" />
+    </edge>
+    <edge source="notes.DECNote" target="soundhandling.NoteRange">
+      <point x="0.0" y="309.5" />
+      <point x="822.8992504409171" y="2371.0" />
+      <point x="899.1492504409171" y="2371.0" />
+      <point x="81.0" y="-366.5" />
+    </edge>
+    <edge source="midifilehandling.MIDIConverter" target="soundhandling.NoteRange">
+      <point x="269.57142857142867" y="-233.5" />
+      <point x="659.2028218694884" y="3154.0" />
+      <point x="633.00639329806" y="3154.0" />
+      <point x="-185.1428571428571" y="366.5" />
+    </edge>
+    <edge source="autodec.autoDEC" target="notes.DECNote">
+      <point x="241.33333333333337" y="-290.5" />
+      <point x="1076.1818783068784" y="3701.0" />
+      <point x="1196.149250440917" y="3701.0" />
+      <point x="1196.149250440917" y="2341.0" />
+      <point x="960.8992504409171" y="2341.0" />
+      <point x="138.0" y="309.5" />
+    </edge>
+    <edge source="notes.DECNote" target="notes.Note">
+      <point x="-40.25" y="-309.5" />
+      <point x="782.6492504409171" y="1682.0" />
+      <point x="787.7742504409171" y="1682.0" />
+      <point x="787.7742504409171" y="1508.0" />
+      <point x="718.3159171075836" y="1508.0" />
+      <point x="46.75" y="480.5" />
+    </edge>
+    <edge source="autodec.DECCommand" target="soundhandling.NoteRange">
+      <point x="83.75000000000006" y="-195.5" />
+      <point x="1079.899250440917" y="3154.0" />
+      <point x="1003.2921075837744" y="3154.0" />
+      <point x="185.14285714285734" y="366.5" />
+    </edge>
+    <edge source="midifilehandling.MIDIConverter" target="midifilehandling.MidiLoader">
+      <point x="-269.57142857142844" y="-233.5" />
+      <point x="120.05996472663128" y="3154.0" />
+      <point x="182.45833333333326" y="3154.0" />
+      <point x="182.45833333333326" y="2371.0" />
+      <point x="111.75" y="2371.0" />
+      <point x="-111.75" y="138.5" />
+    </edge>
+    <edge source="notes.DECNote" target="soundhandling.PitchAnalysis">
+      <point x="120.74999999999999" y="-309.5" />
+      <point x="943.6492504409171" y="1682.0" />
+      <point x="874.1492504409171" y="1682.0" />
+      <point x="874.1492504409171" y="492.0" />
+      <point x="901.0659171075836" y="492.0" />
+      <point x="130.74999999999994" y="233.5" />
+    </edge>
+    <edge source="soundhandling.NoteRange" target="notes.DECNote">
+      <point x="-81.0" y="-366.5" />
+      <point x="737.1492504409171" y="2371.0" />
+      <point x="776.8992504409171" y="2371.0" />
+      <point x="-46.0" y="309.5" />
+    </edge>
+    <edge source="soundhandling.NoteRange" target="notes.MIDINote">
+      <point x="-243.0" y="-366.5" />
+      <point x="575.1492504409171" y="2351.0" />
+      <point x="651.3992504409171" y="2351.0" />
+      <point x="651.3992504409171" y="1682.0" />
+      <point x="492.149250440917" y="1682.0" />
+      <point x="73.0" y="62.0" />
+    </edge>
+    <edge source="notes.Note" target="soundhandling.PitchAnalysis">
+      <point x="0.0" y="-480.5" />
+      <point x="671.5659171075836" y="492.0" />
+      <point x="639.5659171075837" y="492.0" />
+      <point x="-130.75" y="233.5" />
+    </edge>
+    <edge source="autodec.autoDEC" target="soundhandling.NoteRange">
+      <point x="-60.33333333333337" y="-290.5" />
+      <point x="774.5152116402116" y="3701.0" />
+      <point x="818.1492504409172" y="3701.0" />
+      <point x="1.1368683772161603E-13" y="366.5" />
+    </edge>
+    <edge source="midifilehandling.MidiLoader" target="notes.MIDINote">
+      <point x="-149.0" y="-138.5" />
+      <point x="74.5" y="1672.0" />
+      <point x="297.4825837742504" y="1672.0" />
+      <point x="-121.66666666666663" y="62.0" />
+    </edge>
+    <edge source="notes.DECNote" target="notes.MIDINote">
+      <point x="-120.75" y="-309.5" />
+      <point x="702.1492504409171" y="1672.0" />
+      <point x="540.8159171075836" y="1672.0" />
+      <point x="121.66666666666663" y="62.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="618.0" y="356.5" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Methods</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

@@ -3,6 +3,7 @@ import wavetodec.DECtalkPhone;
 /**
  * Handles what the volume should be for various pitches
  * DECtalk changes pitch based on what comes next(?)
+ * @deprecated This is done in the main part of autoDEC now
  */
 public class PitchVolumeController {
 
