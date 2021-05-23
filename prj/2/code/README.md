@@ -1,5 +1,7 @@
 # autoDEC
 
+2021-05-22: making this public now cause why not, I know the project structure is wack but thats what was required. The code being shit was not required, I was a freshman in college though so cut me some slack.
+
 autoDEC is a program that takes a MIDI file as input and outputs a series of WAVE files via
 DECtalk's say.exe program that recreate the input song when played simultaneously.
 
